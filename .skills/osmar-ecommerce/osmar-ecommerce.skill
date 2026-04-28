@@ -1,0 +1,21 @@
+name: osmar-ecommerce
+version: 1.0.0
+description: Build and maintain the Distribuidora Osmar full-stack e-commerce platform
+entrypoint: SKILL.md
+tags:
+  - ecommerce
+  - nextjs
+  - prisma
+  - mercadopago
+  - argentina
+project: tienda-osmar-nextjs
+client: Distribuidora Osmar
+timeline: 2 weeks MVP
+stack:
+  - Next.js 14
+  - TypeScript
+  - Prisma
+  - SQLite (dev) / PostgreSQL (prod)
+  - Mercado Pago
+  - Vercel
+  - Railway
