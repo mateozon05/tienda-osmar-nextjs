@@ -1,30 +1,11 @@
 import { PrismaClient } from "../app/generated/prisma/client";
+import { Pool } from "pg";
+import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 
 function createClient(): PrismaClient {
-  const url = process.env.DATABASE_URL ?? "file:./dev.db";
-
-  if (url.startsWith("postgresql") || url.startsWith("postgres")) {
-    // PostgreSQL via pg (Neon, Railway, etc.)
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { Pool } = require("pg");
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { PrismaPg } = require("@prisma/adapter-pg");
-    const pool = new Pool({ connectionString: url });
-    const adapter = new PrismaPg(pool);
-    return new PrismaClient({ adapter });
-  }
-
-  // SQLite (desarrollo local)
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { PrismaBetterSqlite3 } = require("@prisma/adapter-better-sqlite3");
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const path = require("path");
-  const dbPath = url.replace("file:", "");
-  const absolutePath = path.isAbsolute(dbPath)
-    ? dbPath
-    : path.join(process.cwd(), dbPath);
-  const adapter = new PrismaBetterSqlite3({ url: absolutePath });
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });
 }
 
