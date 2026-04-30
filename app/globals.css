@@ -32,16 +32,7 @@ header.site-header {
   padding: 0 24px; gap: 20px;
 }
 
-.logo {
-  display: flex; align-items: center; gap: 10px;
-  text-decoration: none; flex-shrink: 0;
-}
-.logo-icon {
-  width: 38px; height: 38px; background: var(--c1);
-  border-radius: 10px; display: flex; align-items: center; justify-content: center;
-}
-.logo-name { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: var(--c1); line-height: 1; }
-.logo-sub { font-size: 10px; color: var(--text-muted); font-weight: 400; }
+/* Logo styles are defined in the RESPONSIVE section below */
 
 .search-wrap {
   flex: 1; position: relative; max-width: 600px;
@@ -756,12 +747,174 @@ main.site-main {
 .settings-saved { font-size: 13px; font-weight: 600; color: #059669; }
 .settings-error { font-size: 13px; font-weight: 600; color: #dc2626; }
 
+/* ── LOGO (extracted component) ─────────────────────────────────── */
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; flex-shrink: 0;
+}
+.logo-icon {
+  width: 40px; height: 40px; background: var(--c1);
+  border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(13,124,89,.25);
+  flex-shrink: 0;
+}
+.logo-text { display: flex; flex-direction: column; }
+.logo-name { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: var(--c1); line-height: 1; }
+.logo-sub  { font-size: 10px; color: var(--text-muted); font-weight: 400; letter-spacing: .02em; }
+
+/* ── HAMBURGER BUTTON ─────────────────────────────────────────────── */
+.btn-hamburger {
+  display: none;
+  background: none; border: none; cursor: pointer; padding: 6px;
+  color: var(--text); border-radius: 8px; transition: background .15s;
+  align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.btn-hamburger:hover { background: var(--c2); }
+
+/* ── MOBILE SIDEBAR OVERLAY ──────────────────────────────────────── */
+.sidebar-backdrop {
+  display: none;
+  position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 150;
+}
+
+.sidebar-mobile-head {
+  display: none;
+  align-items: center; justify-content: space-between;
+  padding: 16px 16px 12px; border-bottom: 1.5px solid var(--border);
+  margin-bottom: 8px;
+}
+.sidebar-close-btn {
+  background: none; border: none; cursor: pointer; font-size: 16px;
+  color: var(--text-muted); padding: 4px 8px; border-radius: 6px; line-height: 1;
+}
+.sidebar-close-btn:hover { background: var(--border); color: var(--text); }
+
+.side-title--desktop { display: block; }
+
+/* ── FOOTER ──────────────────────────────────────────────────────── */
+.site-footer {
+  background: var(--text);
+  color: #CBD5E1;
+  margin-top: 64px;
+}
+
+.footer-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1fr 1fr;
+  gap: 48px;
+  padding: 56px 40px 40px;
+}
+
+.footer-col-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: white; margin: 0 0 16px;
+}
+
+/* Brand column */
+.footer-brand {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+}
+.footer-logo-icon {
+  width: 40px; height: 40px; background: var(--c1);
+  border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; box-shadow: 0 2px 8px rgba(13,124,89,.35);
+}
+.footer-logo-name {
+  font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 800;
+  color: white; line-height: 1;
+}
+.footer-logo-sub {
+  font-size: 10px; color: #94A3B8; font-weight: 400; letter-spacing: .02em;
+}
+.footer-tagline {
+  font-size: 13px; line-height: 1.65; color: #94A3B8; margin-bottom: 20px;
+}
+
+.footer-social { display: flex; gap: 10px; flex-wrap: wrap; }
+.social-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600;
+  text-decoration: none; transition: transform .15s, opacity .15s;
+}
+.social-btn:hover { transform: translateY(-1px); opacity: .88; }
+.social-btn--wa { background: #25D366; color: white; }
+.social-btn--ig {
+  background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  color: white;
+}
+
+/* Links list */
+.footer-links {
+  list-style: none; display: flex; flex-direction: column; gap: 10px;
+}
+.footer-links li {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 13px; line-height: 1.5; color: #94A3B8;
+}
+.footer-link {
+  color: #94A3B8; text-decoration: none; transition: color .15s;
+}
+.footer-link:hover { color: white; }
+.footer-link-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+
+/* Bottom bar */
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,.08);
+  padding: 16px 40px;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  font-size: 12px; color: #64748B;
+  max-width: 1200px; margin: 0 auto;
+}
+.footer-bottom-sep { color: #334155; }
+
 /* ── RESPONSIVE ── */
+@media (max-width: 1024px) {
+  .footer-inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    padding: 40px 28px 28px;
+  }
+  .footer-brand-col { grid-column: 1 / -1; }
+}
+
 @media (max-width: 768px) {
-  aside.site-sidebar { display: none; }
+  /* Header */
+  .btn-hamburger { display: flex; }
+  .btn-cart-label { display: none; }
+  header.site-header { padding: 0 16px; gap: 12px; }
+  .search-wrap { max-width: none; }
+
+  /* Sidebar — hidden by default, shown as drawer when .mobile-open */
+  aside.site-sidebar {
+    position: fixed; left: -280px; top: 0; bottom: 0; z-index: 160;
+    width: 280px; height: 100vh;
+    transition: left .28s cubic-bezier(.4,0,.2,1);
+    box-shadow: 4px 0 24px rgba(0,0,0,.18);
+    overflow-y: auto;
+  }
+  aside.site-sidebar.mobile-open { left: 0; }
+  .sidebar-backdrop { display: block; }
+  .sidebar-mobile-head { display: flex; }
+  .side-title--desktop { display: none; }
+
+  /* Main */
   main.site-main { padding: 16px; }
   .products-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
   .cart-drawer { width: 100%; right: -100%; }
+
+  /* Footer */
+  .footer-inner {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 32px 20px 24px;
+  }
+  .footer-brand-col { grid-column: auto; }
+  .footer-bottom { padding: 14px 20px; flex-direction: column; align-items: flex-start; gap: 4px; }
+  .footer-bottom-sep { display: none; }
 
   /* Admin responsive */
   .admin-sidebar { display: none; }
@@ -771,4 +924,11 @@ main.site-main {
   .order-detail-grid { grid-template-columns: 1fr; }
   .orders-table th:nth-child(3),
   .orders-table td:nth-child(3) { display: none; }
+}
+
+@media (max-width: 480px) {
+  .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .card-img { height: 110px; font-size: 42px; }
+  .card-name { font-size: 13px; }
+  .card-price { font-size: 16px; }
 }

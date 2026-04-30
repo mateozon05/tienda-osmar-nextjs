@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Sidebar, { type Category } from "@/components/Sidebar";
 import ProductCard, { type Product } from "@/components/ProductCard";
 import CartDrawer from "@/components/CartDrawer";
+import Footer from "@/components/Footer";
 
 const LIMIT = 40;
 
@@ -18,6 +19,7 @@ export default function CatalogPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [cartOpen, setCartOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     fetch("/api/categories")
@@ -80,6 +82,7 @@ export default function CatalogPage() {
         query={query}
         onQueryChange={handleQueryChange}
         onCartOpen={() => setCartOpen(true)}
+        onMenuToggle={() => setMobileMenuOpen((v) => !v)}
       />
 
       <div className="layout">
@@ -87,6 +90,8 @@ export default function CatalogPage() {
           categories={categories}
           active={activeCategory}
           onSelect={handleCategorySelect}
+          mobileOpen={mobileMenuOpen}
+          onMobileClose={() => setMobileMenuOpen(false)}
         />
 
         <main className="site-main">
@@ -156,6 +161,8 @@ export default function CatalogPage() {
               )}
             </>
           )}
+
+          <Footer />
         </main>
       </div>
 
