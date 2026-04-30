@@ -774,12 +774,12 @@ main.site-main {
 
 /* ── MOBILE SIDEBAR OVERLAY ──────────────────────────────────────── */
 .sidebar-backdrop {
-  display: none;
   position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 150;
+  /* Only rendered in DOM when mobileOpen=true (conditional JSX) */
 }
 
 .sidebar-mobile-head {
-  display: none;
+  display: none; /* shown only inside @media mobile */
   align-items: center; justify-content: space-between;
   padding: 16px 16px 12px; border-bottom: 1.5px solid var(--border);
   margin-bottom: 8px;
