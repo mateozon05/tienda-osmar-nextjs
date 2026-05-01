@@ -99,14 +99,14 @@ export default function Footer() {
           <p className="footer-since">Desde 2010</p>
           <div className="footer-social">
             <a
-              href="https://instagram.com/limpieza_distribuidoraosmar"
+              href="https://www.instagram.com/distri_osmar/"
               target="_blank"
               rel="noopener noreferrer"
               className="footer-social-btn"
               aria-label="Instagram"
             >
               <InstagramIcon />
-              <span>@limpieza_distribuidoraosmar</span>
+              <span>@distri_osmar</span>
             </a>
             <a
               href="https://facebook.com/distribuidoraosmarlimpieza"
