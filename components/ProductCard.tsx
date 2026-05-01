@@ -14,6 +14,26 @@ export type Product = {
   category: { name: string; emoji: string; slug: string } | null;
 };
 
+/**
+ * Aplica transformaciones Cloudinary dinámicamente en la URL.
+ * Las imágenes en BD tienen la URL base (sin parámetros).
+ * Cloudinary procesa y cachea el resultado automáticamente.
+ *
+ * Transformaciones:
+ *   e_trim:20     → recorta bordes del mismo color (elimina márgenes blancos/grises)
+ *   c_pad         → rellena con padding para cuadrar la imagen
+ *   b_white       → fondo blanco limpio
+ *   w_500,h_500   → 500×500 px
+ *   q_auto:good   → calidad óptima automática
+ *   f_auto        → formato automático (WebP/AVIF según el navegador)
+ *   e_vibrance:25 → satura colores (elimina el efecto "grisáceo")
+ */
+function cloudinaryTransform(url: string): string {
+  if (!url.includes("res.cloudinary.com")) return url;
+  const TRANSFORMS = "e_trim:20,c_pad,b_white,w_500,h_500,q_auto:good,f_auto,e_vibrance:25";
+  return url.replace("/upload/", `/upload/${TRANSFORMS}/`);
+}
+
 export default function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
   const [added, setAdded] = useState(false);
@@ -32,13 +52,14 @@ export default function ProductCard({ product }: { product: Product }) {
   }
 
   const hasImage = product.imageUrl && !imgError;
+  const imgSrc = hasImage ? cloudinaryTransform(product.imageUrl!) : null;
 
   return (
     <div className="product-card">
       <div className={`card-img${hasImage ? " card-img--photo" : ""}`}>
-        {hasImage ? (
+        {imgSrc ? (
           <Image
-            src={product.imageUrl!}
+            src={imgSrc}
             alt={product.name}
             fill
             sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 220px"
