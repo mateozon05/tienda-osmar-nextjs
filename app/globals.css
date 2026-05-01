@@ -636,31 +636,77 @@ main.site-main { flex: 1; padding: 28px 28px 48px; overflow: hidden; }
 /* ══════════════════════════════════════════
    FOOTER
 ══════════════════════════════════════════ */
-.site-footer { background: #1A1A2E; color: #CBD5E1; margin-top: 64px; }
+/* ══════════════════════════════════════════
+   FOOTER — Rediseño completo
+══════════════════════════════════════════ */
+.site-footer { background: #064E3B; color: #D1D5DB; margin-top: 64px; }
 .footer-inner {
   max-width: 1200px; margin: 0 auto;
   display: grid; grid-template-columns: 2fr 1.2fr 1fr 1fr;
   gap: 48px; padding: 56px 40px 40px;
 }
-.footer-col-title { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--c1-mid); margin: 0 0 16px; }
-.footer-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-.footer-logo-img { width: 48px; height: 48px; border-radius: 10px; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,.4)); }
-.footer-logo-icon { width: 48px; height: 48px; background: var(--grad); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.footer-logo-name { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: white; line-height: 1; }
-.footer-logo-sub { font-size: 10px; color: var(--c1-mid); font-weight: 500; letter-spacing: .04em; }
-.footer-tagline { font-size: 13px; line-height: 1.65; color: #94A3B8; margin-bottom: 20px; }
-.footer-social { display: flex; gap: 10px; flex-wrap: wrap; }
-.social-btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; text-decoration: none; transition: transform .15s, opacity .15s; }
-.social-btn:hover { transform: translateY(-1px); opacity: .88; }
-.social-btn--wa { background: #25D366; color: white; }
-.social-btn--ig { background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: white; }
-.footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-.footer-links li { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 1.5; color: #94A3B8; }
-.footer-link { color: #94A3B8; text-decoration: none; transition: color .15s; }
-.footer-link:hover { color: var(--c1-mid); }
-.footer-link-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
-.footer-bottom { border-top: 1px solid rgba(255,255,255,.07); padding: 16px 40px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 12px; color: #475569; max-width: 1200px; margin: 0 auto; }
-.footer-bottom-sep { color: #2D3748; }
+/* Títulos de columna */
+.footer-col-title {
+  font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .12em;
+  color: #6EE7B7; margin: 0 0 18px;
+}
+/* Columna brand */
+.footer-brand { margin-bottom: 16px; }
+.footer-logo-img {
+  width: 150px; height: 150px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 12px rgba(0,0,0,.5));
+}
+.footer-logo-fallback {
+  font-size: 64px; line-height: 1; margin-bottom: 8px;
+}
+.footer-tagline {
+  font-size: 13.5px; line-height: 1.7; color: #9CA3AF; margin-bottom: 8px;
+}
+.footer-since {
+  font-size: 12px; font-weight: 600; color: #6EE7B7;
+  letter-spacing: .05em; margin-bottom: 20px;
+}
+/* Social buttons */
+.footer-social { display: flex; flex-direction: column; gap: 10px; }
+.footer-social-btn {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-size: 12.5px; color: #D1D5DB; text-decoration: none;
+  transition: color .15s;
+}
+.footer-social-btn:hover { color: #6EE7B7; }
+/* Links */
+.footer-links { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+.footer-links li { display: flex; align-items: flex-start; gap: 9px; }
+.footer-link {
+  display: inline-flex; align-items: flex-start; gap: 9px;
+  font-size: 13px; line-height: 1.55; color: #D1D5DB;
+  text-decoration: none; transition: color .15s;
+}
+.footer-link:hover { color: #6EE7B7; }
+.footer-link--static {
+  display: inline-flex; align-items: flex-start; gap: 9px;
+  font-size: 13px; line-height: 1.55; color: #D1D5DB; cursor: default;
+}
+.footer-link--wa { color: #4ADE80; }
+.footer-link--wa:hover { color: #86EFAC; }
+.footer-link--maps { color: #93C5FD; }
+.footer-link--maps:hover { color: #BFDBFE; }
+.footer-link-icon {
+  flex-shrink: 0; margin-top: 2px; color: #6EE7B7;
+  display: flex; align-items: center;
+}
+/* Horarios */
+.footer-hours-row { display: block; font-size: 12.5px; line-height: 1.7; }
+.footer-closed { color: #6B7280; }
+/* Bottom bar */
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,.1); padding: 16px 40px;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  font-size: 12px; color: #6B7280; max-width: 1200px; margin: 0 auto;
+}
+.footer-bottom-sep { color: #374151; }
 
 /* ══════════════════════════════════════════
    HAMBURGER & SIDEBAR MOBILE
@@ -826,6 +872,7 @@ main.site-main { flex: 1; padding: 28px 28px 48px; overflow: hidden; }
 @media (max-width: 1024px) {
   .footer-inner { grid-template-columns: 1fr 1fr; gap: 32px; padding: 40px 28px 28px; }
   .footer-brand-col { grid-column: 1 / -1; }
+  .footer-logo-img { width: 110px; height: 110px; }
 }
 
 @media (max-width: 768px) {
