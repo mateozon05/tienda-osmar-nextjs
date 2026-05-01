@@ -6,6 +6,7 @@ import Sidebar, { type Category } from "@/components/Sidebar";
 import ProductCard, { type Product } from "@/components/ProductCard";
 import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
+import Hero from "@/components/Hero";
 
 const LIMIT = 40;
 
@@ -49,32 +50,20 @@ export default function CatalogPage() {
     const timer = setTimeout(() => {
       if (!cancelled) fetchProducts();
     }, delay);
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
+    return () => { cancelled = true; clearTimeout(timer); };
   }, [fetchProducts]);
 
-  function handleQueryChange(q: string) {
-    setQuery(q);
-    setPage(1);
-  }
-
-  function handleCategorySelect(slug: string) {
-    setActiveCategory(slug);
-    setPage(1);
-  }
-
-  function handleSortChange(s: string) {
-    setSort(s);
-    setPage(1);
-  }
+  function handleQueryChange(q: string) { setQuery(q); setPage(1); }
+  function handleCategorySelect(slug: string) { setActiveCategory(slug); setPage(1); }
+  function handleSortChange(s: string) { setSort(s); setPage(1); }
 
   const totalPages = Math.ceil(total / LIMIT);
   const activeLabel =
     activeCategory === "todos"
       ? "Todos los productos"
       : (categories.find((c) => c.slug === activeCategory)?.name ?? "Productos");
+
+  const showHero = activeCategory === "todos" && !query;
 
   return (
     <>
@@ -85,7 +74,16 @@ export default function CatalogPage() {
         onMenuToggle={() => setMobileMenuOpen((v) => !v)}
       />
 
-      <div className="layout">
+      {/* Hero — sólo en vista "Todos" sin búsqueda */}
+      {showHero && (
+        <div style={{ marginTop: "var(--header-h)" }}>
+          <Hero onExplore={() => {
+            document.querySelector("main.site-main")?.scrollIntoView({ behavior: "smooth" });
+          }} />
+        </div>
+      )}
+
+      <div className="layout" style={showHero ? { marginTop: 0 } : undefined}>
         <Sidebar
           categories={categories}
           active={activeCategory}
@@ -97,9 +95,7 @@ export default function CatalogPage() {
         <main className="site-main">
           <div className="main-header">
             <h2>{activeLabel}</h2>
-            {!loading && (
-              <span className="result-count">{total} productos</span>
-            )}
+            {!loading && <span className="result-count">{total} productos</span>}
             <select
               className="sort-select"
               value={sort}
@@ -125,38 +121,20 @@ export default function CatalogPage() {
           ) : (
             <>
               <div className="products-grid">
-                {products.map((p) => (
-                  <ProductCard key={p.id} product={p} />
-                ))}
+                {products.map((p) => <ProductCard key={p.id} product={p} />)}
               </div>
 
               {totalPages > 1 && (
                 <div className="pagination">
-                  <button
-                    className="page-btn"
-                    disabled={page === 1}
-                    onClick={() => setPage((p) => p - 1)}
-                  >
-                    ←
-                  </button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (n) => (
-                      <button
-                        key={n}
-                        className={`page-btn${page === n ? " active" : ""}`}
-                        onClick={() => setPage(n)}
-                      >
-                        {n}
-                      </button>
-                    )
-                  )}
-                  <button
-                    className="page-btn"
-                    disabled={page === totalPages}
-                    onClick={() => setPage((p) => p + 1)}
-                  >
-                    →
-                  </button>
+                  <button className="page-btn" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>←</button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                    <button
+                      key={n}
+                      className={`page-btn${page === n ? " active" : ""}`}
+                      onClick={() => setPage(n)}
+                    >{n}</button>
+                  ))}
+                  <button className="page-btn" disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>→</button>
                 </div>
               )}
             </>
