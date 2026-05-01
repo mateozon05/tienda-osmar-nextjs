@@ -5,7 +5,7 @@ import { useState } from "react";
 
 const PHONE_DISPLAY = "+54 9 11 5017-9447";
 const PHONE_TEL = "tel:+541150179447";
-const WA_LINK = "https://wa.me/541150179447";
+const WA_LINK = "https://wa.me/541150179447?text=Hola%2C+me+interesa+consultar+sobre+productos+de+limpieza";
 const EMAIL = "ventas@distribuidoraosmar.com";
 const MAPS_LINK =
   "https://www.google.com/maps/search/?api=1&query=Av.+Caz%C3%B3n+464+Tigre+Buenos+Aires";
@@ -138,9 +138,15 @@ export default function Footer() {
               </a>
             </li>
             <li>
-              <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="footer-link footer-link--wa">
+              <a
+                href={WA_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="footer-link footer-link--wa"
+                aria-label="Contáctanos por WhatsApp"
+              >
                 <span className="footer-link-icon"><WhatsAppIcon /></span>
-                WhatsApp
+                {PHONE_DISPLAY}
               </a>
             </li>
           </ul>

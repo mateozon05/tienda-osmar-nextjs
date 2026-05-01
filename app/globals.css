@@ -689,8 +689,8 @@ main.site-main { flex: 1; padding: 28px 28px 48px; overflow: hidden; }
   display: inline-flex; align-items: flex-start; gap: 9px;
   font-size: 13px; line-height: 1.55; color: #D1D5DB; cursor: default;
 }
-.footer-link--wa { color: #4ADE80; }
-.footer-link--wa:hover { color: #86EFAC; }
+.footer-link--wa { color: #FFFFFF; }
+.footer-link--wa:hover { color: #25D366; }
 .footer-link--maps { color: #93C5FD; }
 .footer-link--maps:hover { color: #BFDBFE; }
 .footer-link-icon {
