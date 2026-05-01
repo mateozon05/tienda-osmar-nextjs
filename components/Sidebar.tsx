@@ -19,7 +19,7 @@ type Props = {
 };
 
 export default function Sidebar({ categories, active, onSelect, mobileOpen, onMobileClose }: Props) {
-  const visibleCats = categories.filter((c) => c.slug !== "todos");
+  const visibleCats = categories.filter((c) => c.slug !== "todos" && c._count.products > 0);
   const allCount = visibleCats.reduce((s, c) => s + c._count.products, 0);
 
   function handleSelect(slug: string) {
