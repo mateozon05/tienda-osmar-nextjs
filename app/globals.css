@@ -392,8 +392,8 @@ main.site-main { flex: 1; padding: 28px 28px 48px; overflow: hidden; }
 ══════════════════════════════════════════ */
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 16px;
 }
 
 .product-card {
@@ -892,7 +892,7 @@ main.site-main { flex: 1; padding: 28px 28px 48px; overflow: hidden; }
   .side-title--desktop { display: none; }
 
   main.site-main { padding: 16px; }
-  .products-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .products-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
   .cart-drawer { width: 100%; right: -100%; }
 
   .hero { padding: 36px 20px 52px; }
@@ -925,7 +925,7 @@ main.site-main { flex: 1; padding: 28px 28px 48px; overflow: hidden; }
 
 @media (max-width: 480px) {
   .qs-grid { grid-template-columns: 1fr; }
-  .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .products-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .card-img { height: 110px; font-size: 40px; }
   .card-emoji { font-size: 40px; }
   .card-name { font-size: 12.5px; }
