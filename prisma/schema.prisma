@@ -23,6 +23,7 @@ model Product {
   price       Float
   stock       Int        @default(0)
   active      Boolean    @default(true)
+  imageUrl    String?
   categoryId  Int?
   category    Category?  @relation(fields: [categoryId], references: [id])
   cartItems   CartItem[]
