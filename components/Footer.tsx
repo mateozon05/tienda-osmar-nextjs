@@ -10,12 +10,11 @@ export default function Footer() {
     <footer className="site-footer">
       <div className="footer-inner">
 
-        {/* Brand column */}
         <div className="footer-col footer-brand-col">
           <div className="footer-brand">
             {!logoError ? (
               <img
-                src="/logo-osmar.jpg"
+                src="/logo-osmar.png"
                 alt="Logo Distribuidora Osmar"
                 className="footer-logo-img"
                 width={48}
@@ -57,26 +56,16 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Contacto */}
         <div className="footer-col">
           <h4 className="footer-col-title">Contacto</h4>
           <ul className="footer-links">
             <li><span className="footer-link-icon">📍</span><span>Tigre, Buenos Aires, Argentina</span></li>
-            <li>
-              <a href="tel:+5491112345678" className="footer-link">
-                <span className="footer-link-icon">📞</span>+54 9 11 1234-5678
-              </a>
-            </li>
-            <li>
-              <a href="mailto:ventas@distribuidoraosmar.com.ar" className="footer-link">
-                <span className="footer-link-icon">✉️</span>ventas@distribuidoraosmar.com.ar
-              </a>
-            </li>
+            <li><a href="tel:+5491112345678" className="footer-link"><span className="footer-link-icon">📞</span>+54 9 11 1234-5678</a></li>
+            <li><a href="mailto:ventas@distribuidoraosmar.com.ar" className="footer-link"><span className="footer-link-icon">✉️</span>ventas@distribuidoraosmar.com.ar</a></li>
             <li><span className="footer-link-icon">🕐</span><span>Lun–Vie 8:00–17:00 hs</span></li>
           </ul>
         </div>
 
-        {/* Navegación */}
         <div className="footer-col">
           <h4 className="footer-col-title">Navegación</h4>
           <ul className="footer-links">
@@ -87,7 +76,6 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Legal */}
         <div className="footer-col">
           <h4 className="footer-col-title">Legal</h4>
           <ul className="footer-links">

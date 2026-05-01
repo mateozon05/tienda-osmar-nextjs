@@ -15,7 +15,7 @@ export default function Logo({ variant = "full", className }: LogoProps) {
     <Link href="/" className={`logo${className ? ` ${className}` : ""}`}>
       {!imgError ? (
         <img
-          src="/logo-osmar.jpg"
+          src="/logo-osmar.png"
           alt="Logo Distribuidora Osmar"
           className="logo-img"
           width={44}
