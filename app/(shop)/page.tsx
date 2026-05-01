@@ -7,6 +7,9 @@ import ProductCard, { type Product } from "@/components/ProductCard";
 import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
 import Hero from "@/components/Hero";
+import QuienesSomos from "@/components/QuienesSomos";
+import BrandBadges from "@/components/BrandBadges";
+import WhatsAppFloat from "@/components/WhatsAppFloat";
 
 const LIMIT = 40;
 
@@ -74,13 +77,21 @@ export default function CatalogPage() {
         onMenuToggle={() => setMobileMenuOpen((v) => !v)}
       />
 
-      {/* Hero — sólo en vista "Todos" sin búsqueda */}
       {showHero && (
-        <div style={{ marginTop: "var(--header-h)" }}>
-          <Hero onExplore={() => {
-            document.querySelector("main.site-main")?.scrollIntoView({ behavior: "smooth" });
-          }} />
-        </div>
+        <>
+          <div style={{ marginTop: "var(--header-h)" }}>
+            <Hero
+              onExplore={() => {
+                document.querySelector("main.site-main")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              totalProducts={total || undefined}
+            />
+          </div>
+          {/* Fase 5: Brands ticker */}
+          <BrandBadges />
+          {/* Fase 2: Quiénes somos */}
+          <QuienesSomos />
+        </>
       )}
 
       <div className="layout" style={showHero ? { marginTop: 0 } : undefined}>
@@ -145,6 +156,9 @@ export default function CatalogPage() {
       </div>
 
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
+
+      {/* Fase 3: WhatsApp flotante */}
+      <WhatsAppFloat />
     </>
   );
 }

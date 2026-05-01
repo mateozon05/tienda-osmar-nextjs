@@ -159,16 +159,170 @@ header.site-header {
   font-size: 16px; color: rgba(255,255,255,.85);
   margin-bottom: 32px; line-height: 1.6;
 }
+.hero-logo-fallback {
+  width: 96px; height: 96px; border-radius: 20px;
+  background: rgba(255,255,255,.2); display: flex; align-items: center;
+  justify-content: center; margin: 0 auto 20px; font-size: 48px;
+  border: 3px solid rgba(255,255,255,.4);
+}
+
+/* Stats strip */
+.hero-stats {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0; margin-bottom: 32px;
+  background: rgba(255,255,255,.12); border-radius: 16px;
+  padding: 14px 28px; backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.2);
+}
+.hero-stat { text-align: center; padding: 0 20px; }
+.hero-stat-num { display: block; font-size: 22px; font-weight: 800; color: #fff; line-height: 1.1; }
+.hero-stat-label { display: block; font-size: 11px; color: rgba(255,255,255,.75); text-transform: uppercase; letter-spacing: .06em; margin-top: 2px; }
+.hero-stat-sep { width: 1px; height: 36px; background: rgba(255,255,255,.25); flex-shrink: 0; }
+
+/* CTAs row */
+.hero-ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 .hero-cta {
   display: inline-flex; align-items: center; gap: 8px;
   background: white; color: var(--c1);
   font-family: inherit; font-size: 15px; font-weight: 700;
-  padding: 14px 32px; border-radius: 50px; border: none; cursor: pointer;
+  padding: 14px 28px; border-radius: 50px; border: none; cursor: pointer;
   box-shadow: 0 4px 20px rgba(0,0,0,.2);
   transition: transform .2s, box-shadow .2s;
   text-decoration: none;
 }
 .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,.25); }
+.hero-cta--wa {
+  background: #25D366; color: white;
+}
+.hero-cta--wa:hover { background: #20bd5b; color: white; }
+
+/* ══════════════════════════════════════════
+   FASE 5 — BRAND BADGES TICKER
+══════════════════════════════════════════ */
+.brands-section {
+  background: var(--c1-light); padding: 18px 0;
+  border-bottom: 1px solid var(--border); overflow: hidden;
+}
+.brands-label {
+  text-align: center; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: var(--c1); margin-bottom: 12px;
+}
+.brands-track-wrap { overflow: hidden; position: relative; }
+.brands-track-wrap::before,
+.brands-track-wrap::after {
+  content: ''; position: absolute; top: 0; bottom: 0; width: 60px; z-index: 2;
+}
+.brands-track-wrap::before { left: 0; background: linear-gradient(90deg, var(--c1-light), transparent); }
+.brands-track-wrap::after  { right: 0; background: linear-gradient(270deg, var(--c1-light), transparent); }
+.brands-track {
+  display: flex; gap: 12px;
+  animation: brandScroll 30s linear infinite;
+  width: max-content;
+}
+.brands-track:hover { animation-play-state: paused; }
+@keyframes brandScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.brand-chip {
+  display: inline-flex; align-items: center;
+  background: white; color: var(--c1);
+  font-size: 12px; font-weight: 700; letter-spacing: .04em;
+  padding: 6px 16px; border-radius: 50px;
+  border: 1.5px solid var(--border);
+  white-space: nowrap; flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════
+   FASE 2 — QUIÉNES SOMOS
+══════════════════════════════════════════ */
+.quienes-somos {
+  background: var(--bg); padding: 64px 32px;
+  border-bottom: 1px solid var(--border);
+}
+.qs-inner { max-width: 1100px; margin: 0 auto; }
+.qs-header { text-align: center; margin-bottom: 44px; }
+.qs-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 32px; font-weight: 800; color: var(--text); margin-bottom: 12px;
+}
+.qs-sub {
+  font-size: 16px; color: var(--text-muted); max-width: 580px;
+  margin: 0 auto; line-height: 1.65;
+}
+.qs-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+}
+.qs-card {
+  background: var(--c2); border-radius: 20px;
+  padding: 28px 24px; text-align: center;
+  border: 1.5px solid var(--border);
+  transition: transform .2s, box-shadow .2s, border-color .2s;
+}
+.qs-card:hover {
+  transform: translateY(-4px); border-color: var(--c1);
+  box-shadow: 0 12px 32px rgba(13,124,89,.12);
+}
+.qs-card-icon { font-size: 36px; margin-bottom: 14px; }
+.qs-card-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.qs-card-desc { font-size: 13.5px; color: var(--text-muted); line-height: 1.55; }
+
+/* ══════════════════════════════════════════
+   FASE 3 — WHATSAPP FLOTANTE
+══════════════════════════════════════════ */
+.wa-float {
+  position: fixed; bottom: 28px; right: 28px; z-index: 999;
+  width: 58px; height: 58px; border-radius: 50%;
+  background: #25D366; color: white;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 24px rgba(37,211,102,.45);
+  text-decoration: none;
+  animation: waPulse 2.5s ease-in-out infinite;
+  transition: transform .2s, box-shadow .2s;
+}
+.wa-float:hover {
+  transform: scale(1.12);
+  box-shadow: 0 10px 36px rgba(37,211,102,.55);
+  animation: none;
+}
+@keyframes waPulse {
+  0%, 100% { box-shadow: 0 6px 24px rgba(37,211,102,.45); }
+  50%       { box-shadow: 0 6px 36px rgba(37,211,102,.75), 0 0 0 10px rgba(37,211,102,.12); }
+}
+.wa-float-tooltip {
+  position: absolute; right: 68px; top: 50%;
+  transform: translateY(-50%);
+  background: #1a1a2e; color: white;
+  font-size: 13px; font-weight: 600;
+  padding: 8px 14px; border-radius: 10px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.wa-float-tooltip::after {
+  content: ''; position: absolute; left: 100%; top: 50%;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-left-color: #1a1a2e;
+}
+
+/* ══════════════════════════════════════════
+   FASE 4 — FOOTER STEPS
+══════════════════════════════════════════ */
+.footer-steps {
+  list-style: none; display: flex; flex-direction: column; gap: 10px;
+}
+.footer-steps li {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: rgba(255,255,255,.75);
+}
+.footer-step-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--c1-mid); color: white;
+  font-size: 11px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
 
 /* ══════════════════════════════════════════
    LAYOUT
@@ -697,6 +851,17 @@ main.site-main { flex: 1; padding: 28px 28px 48px; overflow: hidden; }
   .hero { padding: 36px 20px 52px; }
   .hero-title { font-size: 28px; }
   .hero-logo { width: 72px; height: 72px; }
+  .hero-stats { gap: 0; padding: 12px 16px; }
+  .hero-stat { padding: 0 12px; }
+  .hero-stat-num { font-size: 18px; }
+  .hero-ctas { flex-direction: column; align-items: center; }
+  .hero-cta { width: 100%; max-width: 320px; justify-content: center; }
+
+  .qs-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .quienes-somos { padding: 40px 20px; }
+  .qs-title { font-size: 26px; }
+
+  .wa-float { bottom: 20px; right: 20px; width: 52px; height: 52px; }
 
   .footer-inner { grid-template-columns: 1fr; gap: 28px; padding: 32px 20px 24px; }
   .footer-brand-col { grid-column: auto; }
@@ -712,6 +877,7 @@ main.site-main { flex: 1; padding: 28px 28px 48px; overflow: hidden; }
 }
 
 @media (max-width: 480px) {
+  .qs-grid { grid-template-columns: 1fr; }
   .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .card-img { height: 110px; font-size: 40px; }
   .card-emoji { font-size: 40px; }
