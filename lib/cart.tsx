@@ -2,20 +2,30 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
+export type PurchaseType = "bulto" | "unidad";
+
 export type CartItem = {
-  id: number;
+  id: number;          // product id
   code: string;
   name: string;
-  price: number;
+  price: number;       // precio efectivo según purchaseType
   quantity: number;
   emoji: string;
+  purchaseType: PurchaseType;
+  bulkUnit?: string;   // label del bulto, ej: "Caja"
+  bulkSize?: number;   // unidades por bulto, ej: 12
 };
+
+// Clave única por ítem: mismo producto puede estar como bulto Y unidad
+function cartKey(id: number, type: PurchaseType) {
+  return `${id}-${type}`;
+}
 
 type CartContextType = {
   items: CartItem[];
   addItem: (product: Omit<CartItem, "quantity">) => void;
-  removeItem: (id: number) => void;
-  updateQty: (id: number, qty: number) => void;
+  removeItem: (id: number, purchaseType: PurchaseType) => void;
+  updateQty: (id: number, purchaseType: PurchaseType, qty: number) => void;
   clearCart: () => void;
   total: number;
   count: number;
@@ -39,26 +49,37 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   function addItem(product: Omit<CartItem, "quantity">) {
     setItems((prev) => {
-      const existing = prev.find((i) => i.id === product.id);
+      const key = cartKey(product.id, product.purchaseType);
+      const existing = prev.find(
+        (i) => cartKey(i.id, i.purchaseType) === key
+      );
       if (existing) {
         return prev.map((i) =>
-          i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
+          cartKey(i.id, i.purchaseType) === key
+            ? { ...i, quantity: i.quantity + 1 }
+            : i
         );
       }
       return [...prev, { ...product, quantity: 1 }];
     });
   }
 
-  function removeItem(id: number) {
-    setItems((prev) => prev.filter((i) => i.id !== id));
+  function removeItem(id: number, purchaseType: PurchaseType) {
+    setItems((prev) =>
+      prev.filter((i) => cartKey(i.id, i.purchaseType) !== cartKey(id, purchaseType))
+    );
   }
 
-  function updateQty(id: number, qty: number) {
+  function updateQty(id: number, purchaseType: PurchaseType, qty: number) {
     if (qty <= 0) {
-      removeItem(id);
+      removeItem(id, purchaseType);
     } else {
       setItems((prev) =>
-        prev.map((i) => (i.id === id ? { ...i, quantity: qty } : i))
+        prev.map((i) =>
+          cartKey(i.id, i.purchaseType) === cartKey(id, purchaseType)
+            ? { ...i, quantity: qty }
+            : i
+        )
       );
     }
   }

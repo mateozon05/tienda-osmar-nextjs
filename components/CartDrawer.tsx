@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/cart";
 
-const WA_NUMBER = "5491100000000"; // Reemplazar con el número real de Osmar
+const WA_NUMBER = "541150179447";
 
 type Props = { open: boolean; onClose: () => void };
 
@@ -13,10 +13,13 @@ export default function CartDrawer({ open, onClose }: Props) {
 
   function handleWhatsApp() {
     const lines = items
-      .map(
-        (i) =>
-          `• ${i.quantity}x ${i.name} — $${(i.price * i.quantity).toLocaleString("es-AR")}`
-      )
+      .map((i) => {
+        const typeLabel =
+          i.purchaseType === "bulto"
+            ? `${i.bulkUnit ?? "Bulto"}${i.bulkSize ? ` ×${i.bulkSize}` : ""}`
+            : "Unidad";
+        return `• ${i.quantity}x ${i.name} (${typeLabel}) — $${(i.price * i.quantity).toLocaleString("es-AR")}`;
+      })
       .join("\n");
     const msg = encodeURIComponent(
       `Hola! Quiero hacer un pedido:\n\n${lines}\n\n*Total: $${total.toLocaleString("es-AR")}*`
@@ -46,25 +49,39 @@ export default function CartDrawer({ open, onClose }: Props) {
             </div>
           ) : (
             items.map((item) => (
-              <div key={item.id} className="cart-item">
+              <div key={`${item.id}-${item.purchaseType}`} className="cart-item">
                 <div className="cart-item-icon">{item.emoji}</div>
                 <div className="cart-item-info">
                   <div className="cart-item-name">{item.name}</div>
+
+                  {/* Badge tipo de compra */}
+                  <div className="cart-item-type">
+                    {item.purchaseType === "bulto" ? (
+                      <span className="type-badge type-badge--bulto">
+                        {item.bulkUnit ?? "Bulto"}
+                        {item.bulkSize ? ` ×${item.bulkSize}` : ""}
+                      </span>
+                    ) : (
+                      <span className="type-badge type-badge--unidad">Unidad</span>
+                    )}
+                  </div>
+
                   <div className="cart-item-price">
                     ${(item.price * item.quantity).toLocaleString("es-AR")} (
                     {item.quantity} × ${item.price.toLocaleString("es-AR")})
                   </div>
+
                   <div className="qty-ctrl">
                     <button
                       className="qty-btn"
-                      onClick={() => updateQty(item.id, item.quantity - 1)}
+                      onClick={() => updateQty(item.id, item.purchaseType, item.quantity - 1)}
                     >
                       −
                     </button>
                     <span className="qty-num">{item.quantity}</span>
                     <button
                       className="qty-btn"
-                      onClick={() => updateQty(item.id, item.quantity + 1)}
+                      onClick={() => updateQty(item.id, item.purchaseType, item.quantity + 1)}
                     >
                       +
                     </button>
@@ -72,7 +89,7 @@ export default function CartDrawer({ open, onClose }: Props) {
                 </div>
                 <button
                   className="item-remove"
-                  onClick={() => removeItem(item.id)}
+                  onClick={() => removeItem(item.id, item.purchaseType)}
                   aria-label="Eliminar"
                 >
                   🗑
@@ -88,7 +105,10 @@ export default function CartDrawer({ open, onClose }: Props) {
               <span>Total</span>
               <span>${total.toLocaleString("es-AR")}</span>
             </div>
-            <button className="btn-checkout" onClick={() => { onClose(); router.push("/checkout"); }}>
+            <button
+              className="btn-checkout"
+              onClick={() => { onClose(); router.push("/checkout"); }}
+            >
               Ir al checkout →
             </button>
             <button className="btn-wa" onClick={handleWhatsApp}>

@@ -11,7 +11,7 @@ import QuienesSomos from "@/components/QuienesSomos";
 import BrandBadges from "@/components/BrandBadges";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 
-const LIMIT = 40;
+const LIMIT = 48;
 
 export default function CatalogPage() {
   const [products, setProducts] = useState<Product[]>([]);

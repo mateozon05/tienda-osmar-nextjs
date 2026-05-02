@@ -24,6 +24,10 @@ model Product {
   stock       Int        @default(0)
   active      Boolean    @default(true)
   imageUrl    String?
+  bulkUnit    String?    // ej: "Caja", "Bolsón", "Pack", "Doypack"
+  bulkSize    Int?       // unidades por bulto  (ej: 12)
+  bulkPrice   Float?     // precio por bulto
+  unitPrice   Float?     // precio por unidad
   categoryId  Int?
   category    Category?  @relation(fields: [categoryId], references: [id])
   cartItems   CartItem[]
