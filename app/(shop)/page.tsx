@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Header from "@/components/Header";
-import Sidebar, { type Category } from "@/components/Sidebar";
+import Sidebar, { type Category, PRICE_MAX } from "@/components/Sidebar";
 import ProductCard, { type Product } from "@/components/ProductCard";
 import ProductModal from "@/components/ProductModal";
 import CartDrawer from "@/components/CartDrawer";
@@ -40,6 +40,29 @@ export default function CatalogPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
+  // ── Filters ───────────────────────────────────────────────
+  const [filterPriceMin, setFilterPriceMin] = useState(0);
+  const [filterPriceMax, setFilterPriceMax] = useState(PRICE_MAX);
+  const [filterInStock,  setFilterInStock]  = useState(false);
+
+  const hasFilters = filterPriceMin > 0 || filterPriceMax < PRICE_MAX || filterInStock;
+
+  function handlePriceChange(min: number, max: number) {
+    setFilterPriceMin(min);
+    setFilterPriceMax(max);
+    setPage(1);
+  }
+  function handleInStockChange(v: boolean) {
+    setFilterInStock(v);
+    setPage(1);
+  }
+  function handleClearFilters() {
+    setFilterPriceMin(0);
+    setFilterPriceMax(PRICE_MAX);
+    setFilterInStock(false);
+    setPage(1);
+  }
+
   useEffect(() => {
     fetch("/api/categories")
       .then(r => r.json())
@@ -55,12 +78,16 @@ export default function CatalogPage() {
       page: String(page),
       limit: String(LIMIT),
     });
+    if (filterPriceMin > 0)       params.set("minPrice", String(filterPriceMin));
+    if (filterPriceMax < PRICE_MAX) params.set("maxPrice", String(filterPriceMax));
+    if (filterInStock)             params.set("inStock", "true");
+
     const res  = await fetch(`/api/products?${params}`);
     const data = await res.json();
     setProducts(data.products);
     setTotal(data.total);
     setLoading(false);
-  }, [query, activeCategory, sort, page]);
+  }, [query, activeCategory, sort, page, filterPriceMin, filterPriceMax, filterInStock]);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,7 +102,6 @@ export default function CatalogPage() {
 
   function handlePageChange(n: number) {
     setPage(n);
-    // Smooth scroll to product grid top
     const mainEl = document.getElementById("shop-main");
     if (mainEl) {
       const top = mainEl.getBoundingClientRect().top + window.scrollY - 80;
@@ -91,7 +117,6 @@ export default function CatalogPage() {
 
   const showHero = activeCategory === "todos" && !query;
 
-  // Pagination range info
   const firstItem = (page - 1) * LIMIT + 1;
   const lastItem  = Math.min(page * LIMIT, total);
 
@@ -127,11 +152,21 @@ export default function CatalogPage() {
           onSelect={handleCategorySelect}
           mobileOpen={mobileMenuOpen}
           onMobileClose={() => setMobileMenuOpen(false)}
+          filterPriceMin={filterPriceMin}
+          filterPriceMax={filterPriceMax}
+          onPriceChange={handlePriceChange}
+          filterInStock={filterInStock}
+          onInStockChange={handleInStockChange}
+          hasFilters={hasFilters}
+          onClearFilters={handleClearFilters}
         />
 
         <main className="site-main" id="shop-main">
           <div className="main-header">
-            <h2>{activeLabel}</h2>
+            <h2>
+              {activeLabel}
+              {hasFilters && <span className="filters-active-dot" title="Filtros activos" />}
+            </h2>
             {!loading && <span className="result-count">{total} productos</span>}
             <select
               className="sort-select"
@@ -145,28 +180,31 @@ export default function CatalogPage() {
           </div>
 
           {loading ? (
-            /* ── Skeleton grid ── */
             <div className="products-grid">
               {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
                 <SkeletonCard key={i} />
               ))}
             </div>
           ) : products.length === 0 ? (
-            /* ── Empty state ── */
             <div className="empty-state">
               <div className="empty-icon">🔍</div>
               <h3 className="empty-title">
-                {query ? `Sin resultados para "${query}"` : "No hay productos en esta categoría"}
+                {query ? `Sin resultados para "${query}"` : "No hay productos con estos filtros"}
               </h3>
               <p className="empty-sub">
                 {query
                   ? "Probá con otro término, revisá el código o explorá por categoría."
-                  : "Seleccioná otra categoría o buscá por nombre."}
+                  : "Ajustá los filtros de precio o stock para ver más productos."}
               </p>
               <div className="empty-actions">
                 {query && (
                   <button className="empty-btn" onClick={() => handleQueryChange("")}>
                     Limpiar búsqueda
+                  </button>
+                )}
+                {hasFilters && (
+                  <button className="empty-btn" onClick={handleClearFilters}>
+                    Limpiar filtros
                   </button>
                 )}
                 {activeCategory !== "todos" && (
@@ -194,14 +232,13 @@ export default function CatalogPage() {
                       className="page-btn page-btn--arrow"
                       disabled={page === 1}
                       onClick={() => handlePageChange(page - 1)}
-                      aria-label="Página anterior"
                     >
                       ← Anterior
                     </button>
 
                     {buildPages(page, totalPages).map((n, i) =>
                       n === "…" ? (
-                        <span key={`ellipsis-${i}`} className="page-ellipsis">…</span>
+                        <span key={`ell-${i}`} className="page-ellipsis">…</span>
                       ) : (
                         <button
                           key={n}
@@ -217,7 +254,6 @@ export default function CatalogPage() {
                       className="page-btn page-btn--arrow"
                       disabled={page === totalPages}
                       onClick={() => handlePageChange(page + 1)}
-                      aria-label="Página siguiente"
                     >
                       Siguiente →
                     </button>

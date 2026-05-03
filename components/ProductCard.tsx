@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { useCart, type PurchaseType } from "@/lib/cart";
 import { useToast } from "@/components/Toast";
+import { useFavorites } from "@/lib/favorites";
 
 export type Product = {
   id: number;
@@ -32,6 +33,22 @@ function StockBadge({ stock }: { stock: number }) {
   return null;
 }
 
+// ── Inline heart icons ────────────────────────────────────
+function HeartFilled() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  );
+}
+function HeartOutline() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  );
+}
+
 export default function ProductCard({
   product,
   onExpand,
@@ -39,8 +56,10 @@ export default function ProductCard({
   product: Product;
   onExpand?: (p: Product) => void;
 }) {
-  const { addItem } = useCart();
-  const { addToast } = useToast();
+  const { addItem }    = useCart();
+  const { addToast }   = useToast();
+  const { isFavorite, toggle } = useFavorites();
+
   const [added, setAdded]       = useState(false);
   const [imgError, setImgError] = useState(false);
 
@@ -56,6 +75,7 @@ export default function ProductCard({
 
   const bulkLabel  = product.bulkUnit ?? "Bulto";
   const sizeLabel  = product.bulkSize && product.bulkSize > 1 ? ` ×${product.bulkSize}` : "";
+  const fav        = isFavorite(product.id);
 
   function handleAdd() {
     addItem({
@@ -70,10 +90,17 @@ export default function ProductCard({
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 800);
-    const label = hasBulkOption
-      ? (purchaseType === "bulto" ? `${bulkLabel}` : "unidad")
-      : "";
+    const label = hasBulkOption ? (purchaseType === "bulto" ? bulkLabel : "unidad") : "";
     addToast(`✓ ${product.name}${label ? ` (${label})` : ""} agregado al carrito`);
+  }
+
+  function handleToggleFav(e: React.MouseEvent) {
+    e.stopPropagation();
+    toggle(product);
+    addToast(
+      fav ? `💔 ${product.name} eliminado de favoritos` : `❤️ ${product.name} guardado en favoritos`,
+      fav ? "info" : "success"
+    );
   }
 
   const hasImage = product.imageUrl && !imgError;
@@ -87,10 +114,20 @@ export default function ProductCard({
       tabIndex={onExpand ? 0 : undefined}
       onKeyDown={onExpand ? e => { if (e.key === "Enter") onExpand(product); } : undefined}
     >
-      {/* Badge layer */}
+      {/* ── Badges ── */}
       <div className="prod-badges">
         <StockBadge stock={product.stock} />
       </div>
+
+      {/* ── Heart / Favorite button ── */}
+      <button
+        className={`fav-btn${fav ? " fav-btn--active" : ""}`}
+        onClick={handleToggleFav}
+        aria-label={fav ? "Quitar de favoritos" : "Agregar a favoritos"}
+        title={fav ? "Quitar de favoritos" : "Agregar a favoritos"}
+      >
+        {fav ? <HeartFilled /> : <HeartOutline />}
+      </button>
 
       <div className={`card-img${hasImage ? " card-img--photo" : ""}`}>
         {imgSrc ? (

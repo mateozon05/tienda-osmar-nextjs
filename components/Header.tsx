@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import { useCart } from "@/lib/cart";
+import { useFavorites } from "@/lib/favorites";
 import AuthModal from "./AuthModal";
 import Logo from "./Logo";
 
@@ -54,6 +56,7 @@ export default function Header({
   query, onQueryChange, onCartOpen, onMenuToggle, onCategorySelect,
 }: Props) {
   const { count } = useCart();
+  const { count: favCount } = useFavorites();
   const [user, setUser] = useState<User>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [focused, setFocused]   = useState(false);
@@ -244,6 +247,14 @@ export default function Header({
 
         {/* ── Actions ── */}
         <div className="header-actions">
+          {/* Favorites link */}
+          <Link href="/favorites" className="btn-fav-link" aria-label="Mis favoritos">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill={favCount > 0 ? "currentColor" : "none"}
+              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            {favCount > 0 && <span className="fav-header-badge">{favCount}</span>}
+          </Link>
           {user ? (
             <div className="user-menu">
               <span className="user-name">
