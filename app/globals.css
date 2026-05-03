@@ -751,6 +751,66 @@ main.site-main { flex: 1; padding: 28px 28px 56px; overflow: hidden; }
 .pm-type-btn:hover { border-color: var(--c1); color: var(--c1); }
 .pm-type-btn--active { background: var(--c1); border-color: var(--c1); color: white; }
 
+/* ── Visual option cards (Bulto / Unidad) ─────────────── */
+.pm-option-section { margin-bottom: 16px; }
+.pm-options {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.pm-option {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 5px; padding: 14px 10px 12px;
+  border: 2px solid var(--border); border-radius: 14px;
+  background: white; cursor: pointer; text-align: center;
+  transition: border-color .18s, box-shadow .18s, background .18s, transform .18s;
+  overflow: hidden;
+}
+.pm-option:hover {
+  border-color: var(--c1); background: var(--c1-light);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(255,117,31,.15);
+}
+.pm-option--active {
+  border-color: var(--c1); background: var(--c1-light);
+  box-shadow: 0 4px 16px rgba(255,117,31,.2);
+}
+.pm-option-check {
+  position: absolute; top: 7px; right: 8px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--c1); color: white;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(255,117,31,.4);
+}
+.pm-option-icon {
+  color: var(--c1-dark); opacity: .75;
+  transition: opacity .15s;
+}
+.pm-option--active .pm-option-icon,
+.pm-option:hover .pm-option-icon { opacity: 1; }
+.pm-option-label {
+  font-size: 11px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--text);
+}
+.pm-option-price {
+  font-size: 17px; font-weight: 800; color: var(--c1);
+  letter-spacing: -.3px; line-height: 1.1;
+}
+.pm-option-desc {
+  font-size: 10.5px; color: var(--text-muted); line-height: 1.35;
+}
+
+/* ── Quantity section ─────────────────────────────────── */
+.pm-qty-section { margin-bottom: 16px; }
+.pm-qty-row {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.pm-qty-total {
+  font-size: 13px; color: var(--text-muted); line-height: 1.35;
+}
+.pm-qty-total strong {
+  color: var(--c1); font-size: 15px; font-weight: 800;
+}
+
 /* Price block */
 .pm-price-block {
   margin-bottom: 16px;
