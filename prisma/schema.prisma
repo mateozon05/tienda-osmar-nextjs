@@ -7,6 +7,34 @@ datasource db {
   provider = "postgresql"
 }
 
+model PriceList {
+  id                 Int            @id @default(autoincrement())
+  name               String         @unique
+  description        String?
+  discountPercentage Float?         // null = sin descuento / usar precios custom
+  isDefault          Boolean        @default(false)
+  users              User[]
+  productPrices      ProductPrice[]
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+}
+
+model User {
+  id          Int        @id @default(autoincrement())
+  email       String     @unique
+  password    String
+  name        String
+  phone       String?
+  company     String?    // empresa del cliente
+  role        String     @default("customer")
+  status      String     @default("approved")   // 'pending' | 'approved' | 'rejected'
+  priceListId Int?
+  priceList   PriceList? @relation(fields: [priceListId], references: [id])
+  orders      Order[]
+  cart        Cart?
+  createdAt   DateTime   @default(now())
+}
+
 model Category {
   id       Int       @id @default(autoincrement())
   name     String    @unique
@@ -16,36 +44,39 @@ model Category {
 }
 
 model Product {
-  id          Int        @id @default(autoincrement())
-  code        String     @unique
-  name        String
-  description String?
-  price       Float
-  stock       Int        @default(0)
-  active      Boolean    @default(true)
-  imageUrl    String?
-  bulkUnit    String?    // ej: "Caja", "Bolsón", "Pack", "Doypack"
-  bulkSize    Int?       // unidades por bulto  (ej: 12)
-  bulkPrice   Float?     // precio por bulto
-  unitPrice   Float?     // precio por unidad
-  categoryId  Int?
-  category    Category?  @relation(fields: [categoryId], references: [id])
-  cartItems   CartItem[]
-  orderItems  OrderItem[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id            Int            @id @default(autoincrement())
+  code          String         @unique
+  name          String
+  description   String?
+  price         Float
+  stock         Int            @default(0)
+  active        Boolean        @default(true)
+  imageUrl      String?
+  bulkUnit      String?
+  bulkSize      Int?
+  bulkPrice     Float?
+  unitPrice     Float?
+  categoryId    Int?
+  category      Category?      @relation(fields: [categoryId], references: [id])
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  productPrices ProductPrice[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  name      String
-  phone     String?
-  role      String   @default("customer")
-  orders    Order[]
-  cart      Cart?
-  createdAt DateTime @default(now())
+model ProductPrice {
+  id              Int       @id @default(autoincrement())
+  productId       Int
+  priceListId     Int
+  customPrice     Float?    // override precio unitario
+  customBulkPrice Float?    // override precio bulto
+  product         Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  priceList       PriceList @relation(fields: [priceListId], references: [id], onDelete: Cascade)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([productId, priceListId])
 }
 
 model Cart {

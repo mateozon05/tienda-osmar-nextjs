@@ -1809,3 +1809,144 @@ main.site-main { flex: 1; padding: 28px 28px 56px; overflow: hidden; }
 }
 .ap-save-btn--active:hover { background: var(--c1-dark); }
 .ap-saved { color: var(--c1); font-size: 18px; font-weight: 700; }
+
+/* ══════════════════════════════════════════
+   ADMIN — Página de Usuarios
+══════════════════════════════════════════ */
+.au-page { padding: 28px 32px; max-width: 1300px; }
+
+.au-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 24px; gap: 16px;
+}
+.au-title {
+  font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800;
+  color: var(--text); margin-bottom: 4px;
+  display: flex; align-items: center; gap: 10px;
+}
+.au-sub { font-size: 13px; color: var(--text-muted); }
+.au-pending-badge {
+  font-size: 12px; font-weight: 700; background: #FEF3C7; color: #92400E;
+  border: 1px solid #FCD34D; padding: 3px 10px; border-radius: 20px;
+}
+.au-refresh-btn {
+  width: 38px; height: 38px; border: 1.5px solid var(--border); border-radius: 10px;
+  background: white; cursor: pointer; font-size: 16px; display: flex;
+  align-items: center; justify-content: center; transition: background .15s;
+}
+.au-refresh-btn:hover { background: var(--sidebar-bg); }
+
+.au-filters { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.au-search {
+  flex: 1; min-width: 200px; height: 40px; border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 0 14px; font-size: 13.5px; outline: none;
+  transition: border-color .15s;
+}
+.au-search:focus { border-color: var(--c1); }
+.au-select {
+  height: 40px; border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 0 12px; font-size: 13px; background: white; outline: none; cursor: pointer;
+}
+
+.au-loading { text-align: center; padding: 60px; color: var(--text-muted); font-size: 15px; }
+
+.au-table-wrap { overflow-x: auto; border: 1.5px solid var(--border); border-radius: 14px; }
+.au-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.au-table thead { background: var(--sidebar-bg); }
+.au-table th {
+  padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted);
+  border-bottom: 1.5px solid var(--border); white-space: nowrap;
+}
+.au-th-actions { width: 160px; }
+.au-table tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+.au-table tbody tr:last-child { border-bottom: none; }
+.au-row:hover { background: #FAFAFA; }
+.au-row--pending { background: #FFFBEB !important; }
+
+.au-table td { padding: 10px 14px; vertical-align: middle; }
+.au-empty { text-align: center; color: var(--text-muted); padding: 40px; font-size: 14px; }
+
+/* User cell */
+.au-cell-user { display: flex; align-items: center; gap: 10px; }
+.au-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--c1-light); color: var(--c1);
+  font-weight: 800; font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.au-user-name { font-weight: 600; font-size: 13px; color: var(--text); }
+.au-user-email { font-size: 11.5px; color: var(--text-muted); }
+.au-cell-company { font-size: 13px; color: var(--text); }
+.au-no-data { color: #CBD5E1; font-size: 16px; }
+.au-cell-date { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+
+/* Status badges */
+.user-status-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700;
+  white-space: nowrap;
+}
+.user-status-badge--pending  { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
+.user-status-badge--approved { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
+.user-status-badge--rejected { background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
+
+/* Price list selector */
+.au-pl-select {
+  height: 32px; border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 0 8px; font-size: 12.5px; background: white; outline: none;
+  cursor: pointer; max-width: 180px; width: 100%;
+}
+.au-pl-select:focus { border-color: var(--c1); }
+.au-pl-select:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Action buttons */
+.au-cell-actions { white-space: nowrap; }
+.au-action-btns { display: flex; gap: 6px; }
+.au-btn {
+  height: 30px; padding: 0 10px; border-radius: 7px; font-size: 11.5px;
+  font-weight: 700; cursor: pointer; border: 1.5px solid transparent;
+  transition: all .12s; white-space: nowrap;
+}
+.au-btn:disabled { opacity: .45; cursor: not-allowed; }
+.au-btn--approve {
+  background: #D1FAE5; color: #065F46; border-color: #6EE7B7;
+}
+.au-btn--approve:not(:disabled):hover { background: #059669; color: white; border-color: #059669; }
+.au-btn--reject {
+  background: #FEE2E2; color: #991B1B; border-color: #FCA5A5;
+}
+.au-btn--reject:not(:disabled):hover { background: #DC2626; color: white; border-color: #DC2626; }
+.au-btn--pending {
+  background: #FEF3C7; color: #92400E; border-color: #FCD34D;
+}
+.au-btn--pending:not(:disabled):hover { background: #D97706; color: white; border-color: #D97706; }
+.au-role-admin {
+  font-size: 11px; font-weight: 700; color: var(--c1);
+  background: var(--c1-light); padding: 3px 10px; border-radius: 20px;
+}
+
+@media (max-width: 900px) {
+  .au-page { padding: 16px; }
+  .au-table { font-size: 12px; }
+}
+
+/* ══════════════════════════════════════════
+   AUTH MODAL — Pending approval message
+══════════════════════════════════════════ */
+.auth-pending-wrap {
+  padding: 28px 24px 24px;
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; gap: 12px;
+}
+.auth-pending-icon { font-size: 52px; line-height: 1; }
+.auth-pending-title {
+  font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800;
+  color: var(--text); margin: 0;
+}
+.auth-pending-msg {
+  font-size: 14px; color: var(--text-muted); line-height: 1.65;
+  max-width: 340px; margin: 0;
+}
+.auth-pending-msg strong { color: var(--text); }

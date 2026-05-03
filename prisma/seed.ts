@@ -61,7 +61,23 @@ async function main() {
     },
   });
 
-  console.log("✅ Seed completado — categorías, productos y admin creados en Neon.");
+  // ── Price Lists ──────────────────────────────────────────
+  const priceLists = [
+    { name: "Público General",  description: "Precios estándar",                     discountPercentage: 0,  isDefault: true  },
+    { name: "Minorista",        description: "10% de descuento para comercios",       discountPercentage: 10, isDefault: false },
+    { name: "Mayorista",        description: "20% de descuento para compras grandes", discountPercentage: 20, isDefault: false },
+    { name: "Distribuidor",     description: "30% de descuento para distribuidores",  discountPercentage: 30, isDefault: false },
+  ];
+
+  for (const pl of priceLists) {
+    await prisma.priceList.upsert({
+      where: { name: pl.name },
+      update: {},
+      create: pl,
+    });
+  }
+
+  console.log("✅ Seed completado — categorías, productos, admin y listas de precios creados.");
 }
 
 main()

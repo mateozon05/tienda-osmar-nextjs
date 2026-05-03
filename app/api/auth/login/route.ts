@@ -29,10 +29,21 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Block rejected accounts
+  if (user.status === "rejected") {
+    return NextResponse.json(
+      { error: "Tu cuenta ha sido rechazada. Contactá al administrador.", code: "ACCOUNT_REJECTED" },
+      { status: 403 }
+    );
+  }
+
   const token = await signToken({ userId: user.id, email: user.email, role: user.role });
   const res = NextResponse.json({
     success: true,
-    user: { id: user.id, email: user.email, name: user.name, role: user.role },
+    user: {
+      id: user.id, email: user.email, name: user.name,
+      role: user.role, status: user.status, company: user.company,
+    },
   });
   res.cookies.set(tokenCookieOptions(token));
   return res;
