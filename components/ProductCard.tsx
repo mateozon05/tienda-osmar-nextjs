@@ -25,7 +25,13 @@ function cloudinaryTransform(url: string): string {
   return url.replace("/upload/", `/upload/${TRANSFORMS}/`);
 }
 
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({
+  product,
+  onExpand,
+}: {
+  product: Product;
+  onExpand?: (p: Product) => void;
+}) {
   const { addItem } = useCart();
   const [added, setAdded] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -68,7 +74,13 @@ export default function ProductCard({ product }: { product: Product }) {
   const imgSrc = hasImage ? cloudinaryTransform(product.imageUrl!) : null;
 
   return (
-    <div className="product-card">
+    <div
+      className="product-card"
+      onClick={() => onExpand?.(product)}
+      role={onExpand ? "button" : undefined}
+      tabIndex={onExpand ? 0 : undefined}
+      onKeyDown={onExpand ? (e) => { if (e.key === "Enter") onExpand(product); } : undefined}
+    >
       <div className={`card-img${hasImage ? " card-img--photo" : ""}`}>
         {imgSrc ? (
           <Image
@@ -94,13 +106,13 @@ export default function ProductCard({ product }: { product: Product }) {
           <div className="card-type-toggle">
             <button
               className={`card-type-btn${purchaseType === "bulto" ? " card-type-btn--active" : ""}`}
-              onClick={() => setPurchaseType("bulto")}
+              onClick={(e) => { e.stopPropagation(); setPurchaseType("bulto"); }}
             >
               {bulkLabel}{sizeLabel}
             </button>
             <button
               className={`card-type-btn${purchaseType === "unidad" ? " card-type-btn--active" : ""}`}
-              onClick={() => setPurchaseType("unidad")}
+              onClick={(e) => { e.stopPropagation(); setPurchaseType("unidad"); }}
             >
               Unidad
             </button>
@@ -114,7 +126,7 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
           <button
             className={`btn-add${added ? " btn-add--added" : ""}`}
-            onClick={handleAdd}
+            onClick={(e) => { e.stopPropagation(); handleAdd(); }}
             title="Agregar al carrito"
           >
             {added ? "✓" : "+"}

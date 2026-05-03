@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Header from "@/components/Header";
 import Sidebar, { type Category } from "@/components/Sidebar";
 import ProductCard, { type Product } from "@/components/ProductCard";
+import ProductModal from "@/components/ProductModal";
 import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
 import Hero from "@/components/Hero";
@@ -24,6 +25,7 @@ export default function CatalogPage() {
   const [loading, setLoading] = useState(true);
   const [cartOpen, setCartOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     fetch("/api/categories")
@@ -132,7 +134,13 @@ export default function CatalogPage() {
           ) : (
             <>
               <div className="products-grid">
-                {products.map((p) => <ProductCard key={p.id} product={p} />)}
+                {products.map((p) => (
+                  <ProductCard
+                    key={p.id}
+                    product={p}
+                    onExpand={setSelectedProduct}
+                  />
+                ))}
               </div>
 
               {totalPages > 1 && (
@@ -155,6 +163,7 @@ export default function CatalogPage() {
         </main>
       </div>
 
+      <ProductModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
 
       {/* Fase 3: WhatsApp flotante */}
