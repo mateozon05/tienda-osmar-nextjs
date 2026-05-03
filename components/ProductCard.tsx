@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useCart, type PurchaseType } from "@/lib/cart";
+import { useToast } from "@/components/Toast";
 
 export type Product = {
   id: number;
@@ -11,7 +12,6 @@ export type Product = {
   price: number;
   stock: number;
   imageUrl: string | null;
-  // Campos bulto/unidad (opcionales — sólo muestran selector si están presentes)
   bulkUnit: string | null;
   bulkSize: number | null;
   bulkPrice: number | null;
@@ -21,8 +21,15 @@ export type Product = {
 
 function cloudinaryTransform(url: string): string {
   if (!url.includes("res.cloudinary.com")) return url;
-  const TRANSFORMS = "e_trim:20,c_pad,b_white,w_500,h_500,q_auto:good,f_auto,e_vibrance:25";
-  return url.replace("/upload/", `/upload/${TRANSFORMS}/`);
+  const T = "e_trim:20,c_pad,b_white,w_500,h_500,q_auto:good,f_auto,e_vibrance:25";
+  return url.replace("/upload/", `/upload/${T}/`);
+}
+
+function StockBadge({ stock }: { stock: number }) {
+  if (stock <= 0)  return <span className="prod-badge prod-badge--out">Sin stock</span>;
+  if (stock <= 5)  return <span className="prod-badge prod-badge--low">¡Quedan {stock}!</span>;
+  if (stock <= 15) return <span className="prod-badge prod-badge--warn">Stock bajo</span>;
+  return null;
 }
 
 export default function ProductCard({
@@ -33,10 +40,10 @@ export default function ProductCard({
   onExpand?: (p: Product) => void;
 }) {
   const { addItem } = useCart();
-  const [added, setAdded] = useState(false);
+  const { addToast } = useToast();
+  const [added, setAdded]       = useState(false);
   const [imgError, setImgError] = useState(false);
 
-  // ¿Tiene datos de bulto Y unidad?
   const hasBulkOption = !!(product.bulkPrice && product.unitPrice);
   const [purchaseType, setPurchaseType] = useState<PurchaseType>(
     hasBulkOption ? "bulto" : "unidad"
@@ -44,16 +51,11 @@ export default function ProductCard({
 
   const displayPrice =
     hasBulkOption
-      ? purchaseType === "bulto"
-        ? product.bulkPrice!
-        : product.unitPrice!
+      ? (purchaseType === "bulto" ? product.bulkPrice! : product.unitPrice!)
       : product.price;
 
-  const bulkLabel = product.bulkUnit ?? "Bulto";
-  const sizeLabel =
-    product.bulkSize && product.bulkSize > 1
-      ? ` ×${product.bulkSize}`
-      : "";
+  const bulkLabel  = product.bulkUnit ?? "Bulto";
+  const sizeLabel  = product.bulkSize && product.bulkSize > 1 ? ` ×${product.bulkSize}` : "";
 
   function handleAdd() {
     addItem({
@@ -68,10 +70,14 @@ export default function ProductCard({
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 800);
+    const label = hasBulkOption
+      ? (purchaseType === "bulto" ? `${bulkLabel}` : "unidad")
+      : "";
+    addToast(`✓ ${product.name}${label ? ` (${label})` : ""} agregado al carrito`);
   }
 
   const hasImage = product.imageUrl && !imgError;
-  const imgSrc = hasImage ? cloudinaryTransform(product.imageUrl!) : null;
+  const imgSrc   = hasImage ? cloudinaryTransform(product.imageUrl!) : null;
 
   return (
     <div
@@ -79,8 +85,13 @@ export default function ProductCard({
       onClick={() => onExpand?.(product)}
       role={onExpand ? "button" : undefined}
       tabIndex={onExpand ? 0 : undefined}
-      onKeyDown={onExpand ? (e) => { if (e.key === "Enter") onExpand(product); } : undefined}
+      onKeyDown={onExpand ? e => { if (e.key === "Enter") onExpand(product); } : undefined}
     >
+      {/* Badge layer */}
+      <div className="prod-badges">
+        <StockBadge stock={product.stock} />
+      </div>
+
       <div className={`card-img${hasImage ? " card-img--photo" : ""}`}>
         {imgSrc ? (
           <Image
@@ -90,6 +101,7 @@ export default function ProductCard({
             sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 200px"
             className="card-photo"
             onError={() => setImgError(true)}
+            loading="lazy"
           />
         ) : (
           <span className="card-emoji">{product.category?.emoji ?? "📦"}</span>
@@ -101,18 +113,17 @@ export default function ProductCard({
         <div className="card-name">{product.name}</div>
         <div className="card-code">Cód: {product.code}</div>
 
-        {/* Selector Bulto / Unidad — sólo si hay ambos precios */}
         {hasBulkOption && (
           <div className="card-type-toggle">
             <button
               className={`card-type-btn${purchaseType === "bulto" ? " card-type-btn--active" : ""}`}
-              onClick={(e) => { e.stopPropagation(); setPurchaseType("bulto"); }}
+              onClick={e => { e.stopPropagation(); setPurchaseType("bulto"); }}
             >
               {bulkLabel}{sizeLabel}
             </button>
             <button
               className={`card-type-btn${purchaseType === "unidad" ? " card-type-btn--active" : ""}`}
-              onClick={(e) => { e.stopPropagation(); setPurchaseType("unidad"); }}
+              onClick={e => { e.stopPropagation(); setPurchaseType("unidad"); }}
             >
               Unidad
             </button>
@@ -126,8 +137,9 @@ export default function ProductCard({
           </div>
           <button
             className={`btn-add${added ? " btn-add--added" : ""}`}
-            onClick={(e) => { e.stopPropagation(); handleAdd(); }}
+            onClick={e => { e.stopPropagation(); handleAdd(); }}
             title="Agregar al carrito"
+            disabled={product.stock <= 0}
           >
             {added ? "✓" : "+"}
           </button>

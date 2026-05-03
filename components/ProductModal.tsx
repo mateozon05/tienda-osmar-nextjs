@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useCart, type PurchaseType } from "@/lib/cart";
+import { useToast } from "@/components/Toast";
 import type { Product } from "./ProductCard";
 
 function cloudinaryLarge(url: string): string {
@@ -47,7 +48,8 @@ type Props = {
 };
 
 export default function ProductModal({ product, onClose }: Props) {
-  const { addItem } = useCart();
+  const { addItem }  = useCart();
+  const { addToast } = useToast();
   const [imgError, setImgError]         = useState(false);
   const [added, setAdded]               = useState(false);
   const [quantity, setQuantity]         = useState(1);
@@ -106,6 +108,12 @@ export default function ProductModal({ product, onClose }: Props) {
     }
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
+    const typeLabel = hasBulk
+      ? (purchaseType === "bulto" ? bulkLabel : "unidad")
+      : "";
+    addToast(
+      `✓ ${quantity > 1 ? `${quantity}× ` : ""}${product!.name}${typeLabel ? ` (${typeLabel})` : ""} agregado`
+    );
   }
 
   function changeQty(delta: number) {

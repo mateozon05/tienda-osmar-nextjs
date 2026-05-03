@@ -30,11 +30,10 @@ export async function GET(req: NextRequest) {
       orderBy: { name: "asc" },
       skip: (page - 1) * limit,
       take: limit,
-      include: { category: { select: { name: true, slug: true, emoji: true } } },
       select: {
         id: true, code: true, name: true, price: true, active: true,
         bulkUnit: true, bulkSize: true, bulkPrice: true, unitPrice: true,
-        category: true,
+        category: { select: { name: true, slug: true, emoji: true } },
       },
     }),
     prisma.product.count({ where }),
