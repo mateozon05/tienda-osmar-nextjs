@@ -7,7 +7,7 @@ interface HeroProps {
   totalProducts?: number;
 }
 
-const WA_NUMBER = "5491158351298";
+const WA_NUMBER = "541150179447";
 
 export default function Hero({ onExplore, totalProducts }: HeroProps) {
   const [logoError, setLogoError] = useState(false);

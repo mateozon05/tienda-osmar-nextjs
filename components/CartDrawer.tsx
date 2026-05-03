@@ -102,8 +102,11 @@ export default function CartDrawer({ open, onClose }: Props) {
         {items.length > 0 && (
           <div className="cart-foot">
             <div className="cart-total">
-              <span>Total</span>
-              <span>${total.toLocaleString("es-AR")}</span>
+              <span>{items.reduce((s,i)=>s+i.quantity,0)} artículos en tu pedido</span>
+            </div>
+            <div className="cart-total-row">
+              <span className="cart-total-label">Total</span>
+              <span className="cart-total-val">${total.toLocaleString("es-AR")}</span>
             </div>
             <button
               className="btn-checkout"
