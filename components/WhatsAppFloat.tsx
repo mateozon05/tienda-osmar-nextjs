@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-const WA_NUMBER = "5491158351298";
-const WA_MESSAGE = "Hola! Quiero consultar sobre sus productos.";
+const WA_NUMBER = "541150179447";
+const WA_MESSAGE = "Hola, me interesa consultar sobre productos de limpieza";
 
 export default function WhatsAppFloat() {
   const [hovered, setHovered] = useState(false);
