@@ -2279,3 +2279,113 @@ main.site-main { flex: 1; padding: 28px 28px 56px; overflow: hidden; }
   text-align: center;
 }
 .pending-users-arrow { font-size: 16px; opacity: .6; }
+
+/* ═══════════════════════════════════════════════════════════
+   ADMIN AUDIT PAGE
+   ═══════════════════════════════════════════════════════════ */
+.audit-page  { padding: 32px; max-width: 1200px; }
+
+.audit-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.audit-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+.audit-sub { font-size: 13px; color: var(--muted); margin: 0; }
+
+.audit-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.audit-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.audit-filter-btn {
+  padding: 5px 13px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1.5px solid #E5E7EB;
+  background: #fff;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+}
+.audit-filter-btn:hover { border-color: var(--primary); color: var(--primary); }
+.audit-filter-btn--active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.audit-table-wrap {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  overflow: hidden;
+  overflow-x: auto;
+}
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.audit-table thead tr {
+  background: #F9FAFB;
+}
+.audit-table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.audit-row td { padding: 10px 14px; border-top: 1px solid #F3F4F6; vertical-align: middle; }
+.audit-row:hover td { background: #FAFAFA; }
+
+.audit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.audit-id   { color: var(--muted); font-size: 12px; font-family: monospace; }
+.audit-user { font-weight: 500; color: var(--text); white-space: nowrap; }
+.audit-ip   { font-family: monospace; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.audit-date { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.audit-details {
+  color: var(--muted);
+  font-size: 12px;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.audit-count {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 10px;
+  text-align: right;
+}

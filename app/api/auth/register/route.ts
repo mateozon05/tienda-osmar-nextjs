@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { audit } from "@/lib/audit";
+import { notifyNewUserPending } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   const { email, password, name, company } = await req.json();
@@ -34,9 +36,23 @@ export async function POST(req: NextRequest) {
       password: hashed,
       name,
       company: company || null,
-      status: "pending",   // new users require admin approval
+      status: "pending",
     },
   });
+
+  // Fire-and-forget: audit + notify admin
+  await Promise.all([
+    audit({
+      action:   "REGISTER",
+      entity:   "User",
+      entityId: user.id,
+      userId:   user.id,
+      userName: user.name,
+      details:  { company: user.company },
+      ip:       req.headers.get("x-forwarded-for") ?? "unknown",
+    }),
+    notifyNewUserPending({ name: user.name, email: user.email, company: user.company }),
+  ]);
 
   return NextResponse.json(
     { success: true, userId: user.id, status: "pending" },

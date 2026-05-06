@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { audit } from "@/lib/audit";
+import { notifyUserApproved, notifyUserRejected } from "@/lib/email";
 
 export async function PATCH(
   req: NextRequest,
@@ -38,6 +40,52 @@ export async function PATCH(
       priceList: { select: { id: true, name: true } },
     },
   });
+
+  // Audit + email notifications (fire-and-forget)
+  const auditPromises: Promise<unknown>[] = [];
+
+  if (status === "approved") {
+    auditPromises.push(
+      audit({
+        action:   "USER_APPROVED",
+        entity:   "User",
+        entityId: userId,
+        userId:   session.userId,
+        userName: session.email,
+        details:  { targetUser: user.name, targetEmail: user.email, priceList: user.priceList?.name },
+      }),
+      notifyUserApproved({
+        name:          user.name,
+        email:         user.email,
+        priceListName: user.priceList?.name ?? "Público General",
+      })
+    );
+  } else if (status === "rejected") {
+    auditPromises.push(
+      audit({
+        action:   "USER_REJECTED",
+        entity:   "User",
+        entityId: userId,
+        userId:   session.userId,
+        userName: session.email,
+        details:  { targetUser: user.name, targetEmail: user.email },
+      }),
+      notifyUserRejected({ name: user.name, email: user.email })
+    );
+  } else if (priceListId !== undefined) {
+    auditPromises.push(
+      audit({
+        action:   "USER_PRICE_LIST_CHANGED",
+        entity:   "User",
+        entityId: userId,
+        userId:   session.userId,
+        userName: session.email,
+        details:  { targetUser: user.name, newPriceList: user.priceList?.name ?? null },
+      })
+    );
+  }
+
+  await Promise.all(auditPromises);
 
   return NextResponse.json({ user });
 }

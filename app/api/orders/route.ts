@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { audit } from "@/lib/audit";
+import { notifyNewOrder } from "@/lib/email";
 
 type CartItem = { productId: number; quantity: number };
 
@@ -31,6 +33,9 @@ export async function POST(req: NextRequest) {
   );
 
   const session = await getSession();
+  const customerName = session
+    ? (await prisma.user.findUnique({ where: { id: session.userId }, select: { name: true } }))?.name ?? session.email
+    : guestName ?? "Invitado";
 
   const order = await prisma.order.create({
     data: {
@@ -53,6 +58,25 @@ export async function POST(req: NextRequest) {
       },
     },
   });
+
+  // Audit + notify admin (fire-and-forget)
+  await Promise.all([
+    audit({
+      action:   "ORDER_CREATED",
+      entity:   "Order",
+      entityId: order.id,
+      userId:   session?.userId ?? undefined,
+      userName: customerName,
+      details:  { total: order.total, itemCount: items.length, shippingCity },
+      ip:       req.headers.get("x-forwarded-for") ?? "unknown",
+    }),
+    notifyNewOrder({
+      id:        order.id,
+      userName:  customerName,
+      total:     order.total,
+      itemCount: items.length,
+    }),
+  ]);
 
   return NextResponse.json({ orderId: order.id, total: order.total }, { status: 201 });
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { signToken, tokenCookieOptions } from "@/lib/auth";
+import { audit } from "@/lib/audit";
 
 export async function POST(req: NextRequest) {
   const { email, password } = await req.json();
@@ -54,5 +55,16 @@ export async function POST(req: NextRequest) {
     },
   });
   res.cookies.set(tokenCookieOptions(token));
+
+  await audit({
+    action:    "LOGIN",
+    entity:    "User",
+    entityId:  user.id,
+    userId:    user.id,
+    userName:  user.name,
+    ip:        req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip") ?? "unknown",
+    userAgent: req.headers.get("user-agent") ?? "unknown",
+  });
+
   return res;
 }

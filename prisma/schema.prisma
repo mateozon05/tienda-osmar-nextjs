@@ -134,3 +134,16 @@ model Setting {
   value     String
   updatedAt DateTime @updatedAt
 }
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  action    String
+  entity    String
+  entityId  Int?
+  userId    Int?
+  userName  String?
+  details   Json?
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+}
