@@ -29,13 +29,15 @@ function applyPrices(
     const mult = 1 - discountPct / 100;
     return {
       ...product,
+      originalPrice:      product.price,
+      discountPercentage: discountPct,
       price:     Math.round(product.price * mult),
       unitPrice: product.unitPrice ? Math.round(product.unitPrice * mult) : product.unitPrice,
       bulkPrice: product.bulkPrice ? Math.round(product.bulkPrice * mult) : product.bulkPrice,
     };
   }
 
-  return product;
+  return { ...product, originalPrice: null, discountPercentage: 0 };
 }
 
 export async function GET(req: NextRequest) {
