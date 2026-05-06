@@ -6,8 +6,10 @@ function getResend(): Resend | null {
   return new Resend(process.env.RESEND_API_KEY);
 }
 
-const FROM_ADMIN = "Tienda Osmar <noreply@distribuidoraosmar.com>";
-const FROM_USER  = "Distribuidora Osmar <noreply@distribuidoraosmar.com>";
+// Use onboarding@resend.dev until domain is verified at resend.com/domains
+// Once distribuidoraosmar.com is verified, change to noreply@distribuidoraosmar.com
+const FROM_ADMIN = process.env.RESEND_FROM ?? "Tienda Osmar <onboarding@resend.dev>";
+const FROM_USER  = process.env.RESEND_FROM ?? "Distribuidora Osmar <onboarding@resend.dev>";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "ventas@distribuidoraosmar.com";
 const STORE_URL   = process.env.NEXT_PUBLIC_URL ?? "https://tienda-osmar-nextjs.vercel.app";
 
