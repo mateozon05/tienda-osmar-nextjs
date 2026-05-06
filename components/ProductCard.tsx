@@ -18,6 +18,8 @@ export type Product = {
   bulkPrice: number | null;
   unitPrice: number | null;
   category: { name: string; emoji: string; slug: string } | null;
+  originalPrice?: number | null;
+  discountPercentage?: number | null;
 };
 
 function cloudinaryTransform(url: string): string {
@@ -73,6 +75,14 @@ export default function ProductCard({
       ? (purchaseType === "bulto" ? product.bulkPrice! : product.unitPrice!)
       : product.price;
 
+  const discount = product.discountPercentage ?? 0;
+  const hasDiscount = discount > 0 && product.originalPrice != null;
+  const originalDisplayPrice = hasDiscount
+    ? (hasBulkOption
+        ? Math.round((purchaseType === "bulto" ? product.bulkPrice! : product.unitPrice!) / (1 - discount / 100))
+        : product.originalPrice!)
+    : null;
+
   const bulkLabel  = product.bulkUnit ?? "Bulto";
   const sizeLabel  = product.bulkSize && product.bulkSize > 1 ? ` ×${product.bulkSize}` : "";
   const fav        = isFavorite(product.id);
@@ -117,6 +127,9 @@ export default function ProductCard({
       {/* ── Badges ── */}
       <div className="prod-badges">
         <StockBadge stock={product.stock} />
+        {hasDiscount && (
+          <span className="prod-badge prod-badge--discount">-{discount}%</span>
+        )}
       </div>
 
       {/* ── Heart / Favorite button ── */}
@@ -170,6 +183,11 @@ export default function ProductCard({
         <div className="card-footer">
           <div className="card-price">
             <small>{hasBulkOption ? (purchaseType === "bulto" ? `Por ${bulkLabel}` : "Por unidad") : "Precio"}</small>
+            {hasDiscount && (
+              <span className="card-price-original">
+                ${originalDisplayPrice!.toLocaleString("es-AR", { minimumFractionDigits: 0 })}
+              </span>
+            )}
             ${displayPrice.toLocaleString("es-AR", { minimumFractionDigits: 0 })}
           </div>
           <button

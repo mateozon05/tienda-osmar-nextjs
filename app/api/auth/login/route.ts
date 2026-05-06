@@ -29,10 +29,18 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Block pending accounts
+  if (user.status === "pending") {
+    return NextResponse.json(
+      { error: "Tu cuenta está pendiente de aprobación. Te avisaremos cuando esté activa.", code: "ACCOUNT_PENDING" },
+      { status: 403 }
+    );
+  }
+
   // Block rejected accounts
   if (user.status === "rejected") {
     return NextResponse.json(
-      { error: "Tu cuenta ha sido rechazada. Contactá al administrador.", code: "ACCOUNT_REJECTED" },
+      { error: "Tu cuenta no fue aprobada. Contactá a ventas@distribuidoraosmar.com", code: "ACCOUNT_REJECTED" },
       { status: 403 }
     );
   }

@@ -2061,3 +2061,221 @@ main.site-main { flex: 1; padding: 28px 28px 56px; overflow: hidden; }
 
 /* ── 12. Footer ────────────────────────────────────────────── */
 .site-footer { background:var(--stitch-secondary) !important; }
+
+/* ═══════════════════════════════════════════════════════════
+   AUTH PAGES  (login / register)
+   ═══════════════════════════════════════════════════════════ */
+.auth-screen {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #1A1A2E 0%, #c44a00 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: 'DM Sans', sans-serif;
+  z-index: 9999;
+}
+
+.auth-card {
+  background: #fff;
+  border-radius: 22px;
+  padding: 38px 34px;
+  width: 100%;
+  max-width: 370px;
+  box-shadow: 0 24px 80px rgba(0,0,0,.35);
+}
+
+/* Brand row */
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 26px;
+}
+.auth-logo-wrap {
+  width: 42px;
+  height: 42px;
+  background: #FF751F;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.auth-logo-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+.auth-brand-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 19px;
+  font-weight: 800;
+  color: #FF751F;
+  line-height: 1;
+}
+.auth-brand-sub {
+  font-size: 11px;
+  color: #6B7280;
+  margin-top: 2px;
+}
+
+/* Headings */
+.auth-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 21px;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 5px;
+}
+.auth-subtitle {
+  font-size: 13px;
+  color: #6B7280;
+  margin: 0 0 22px;
+}
+
+/* Error */
+.auth-error {
+  background: #FEE2E2;
+  color: #991B1B;
+  border-radius: 9px;
+  padding: 9px 13px;
+  font-size: 13px;
+  margin-bottom: 13px;
+}
+
+/* Fields */
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 13px;
+}
+.auth-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.auth-required { color: #DC2626; margin-left: 2px; }
+.auth-optional { color: #9CA3AF; font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+.auth-input {
+  border: 1.5px solid #E5E7EB;
+  border-radius: 10px;
+  padding: 11px 13px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .15s;
+  color: #111827;
+}
+.auth-input:focus { border-color: #FF751F; }
+
+/* Button */
+.auth-btn {
+  width: 100%;
+  height: 46px;
+  background: #FF751F;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s;
+  margin-top: 4px;
+}
+.auth-btn:hover:not(:disabled) { background: #E55100; }
+.auth-btn:disabled { background: #D1D5DB; cursor: not-allowed; }
+
+/* Bottom link */
+.auth-switch {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 13px;
+  color: #6B7280;
+}
+.auth-link {
+  color: #FF751F;
+  font-weight: 600;
+  text-decoration: none;
+}
+.auth-link:hover { text-decoration: underline; }
+
+/* Pending screen */
+.auth-pending-wrap {
+  text-align: center;
+  padding: 10px 0 6px;
+}
+.auth-pending-icon  { font-size: 52px; line-height: 1; }
+.auth-pending-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  margin: 14px 0 8px;
+  color: #111827;
+}
+.auth-pending-msg {
+  font-size: 14px;
+  color: #6B7280;
+  line-height: 1.55;
+}
+.auth-pending-msg strong { color: #111827; }
+
+/* ═══════════════════════════════════════════════════════════
+   PRODUCT CARD  —  discount styles
+   ═══════════════════════════════════════════════════════════ */
+.prod-badge--discount {
+  background: #D1FAE5;
+  color: #065F46;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+
+.card-price-original {
+  display: block;
+  font-size: 12px;
+  color: #9CA3AF;
+  text-decoration: line-through;
+  line-height: 1;
+  margin-bottom: 1px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ADMIN DASHBOARD  —  pending users alert
+   ═══════════════════════════════════════════════════════════ */
+.pending-users-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #FEF3C7;
+  border: 1.5px solid #F59E0B;
+  border-radius: 12px;
+  padding: 13px 18px;
+  margin-bottom: 20px;
+  text-decoration: none;
+  color: #92400E;
+  transition: background .15s;
+}
+.pending-users-alert:hover { background: #FDE68A; }
+.pending-users-icon { font-size: 20px; }
+.pending-users-text { flex: 1; font-size: 14px; }
+.pending-users-text strong { color: #78350F; }
+.pending-users-badge {
+  background: #DC2626;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 2px 8px;
+  min-width: 22px;
+  text-align: center;
+}
+.pending-users-arrow { font-size: 16px; opacity: .6; }

@@ -13,7 +13,7 @@ async function getStats() {
   const todayEnd = new Date(now); todayEnd.setHours(23, 59, 59, 999);
   const sevenAgo = new Date(now); sevenAgo.setDate(sevenAgo.getDate() - 6); sevenAgo.setHours(0, 0, 0, 0);
 
-  const [todayCount, revenueAgg, pendingCount, deliveredToday, recent, lastFive] = await Promise.all([
+  const [todayCount, revenueAgg, pendingCount, deliveredToday, recent, lastFive, pendingUsers] = await Promise.all([
     prisma.order.count({ where: { createdAt: { gte: todayStart, lte: todayEnd } } }),
     prisma.order.aggregate({
       _sum: { total: true },
@@ -26,6 +26,7 @@ async function getStats() {
       take: 5, orderBy: { createdAt: "desc" },
       select: { id: true, guestName: true, guestEmail: true, total: true, status: true, createdAt: true, user: { select: { name: true, email: true } } },
     }),
+    prisma.user.count({ where: { status: "pending" } }),
   ]);
 
   const chartData = Array.from({ length: 7 }, (_, i) => {
@@ -35,11 +36,11 @@ async function getStats() {
     return { date: dateStr, label: d.toLocaleDateString("es-AR", { weekday: "short" }), count: dayOrders.length, revenue: dayOrders.reduce((s, o) => s + o.total, 0) };
   });
 
-  return { todayCount, revenue: revenueAgg._sum.total ?? 0, pendingCount, deliveredToday, chartData, lastFive };
+  return { todayCount, revenue: revenueAgg._sum.total ?? 0, pendingCount, deliveredToday, chartData, lastFive, pendingUsers };
 }
 
 export default async function DashboardPage() {
-  const { todayCount, revenue, pendingCount, deliveredToday, chartData, lastFive } = await getStats();
+  const { todayCount, revenue, pendingCount, deliveredToday, chartData, lastFive, pendingUsers } = await getStats();
   const maxCount = Math.max(...chartData.map((d) => d.count), 1);
 
   const cards = [
@@ -68,6 +69,19 @@ export default async function DashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* Pending users alert */}
+      {pendingUsers > 0 && (
+        <Link href="/users" className="pending-users-alert">
+          <span className="pending-users-icon">👤</span>
+          <span className="pending-users-text">
+            <strong>{pendingUsers} usuario{pendingUsers > 1 ? "s" : ""} pendiente{pendingUsers > 1 ? "s" : ""}</strong>
+            {" "}de aprobación
+          </span>
+          <span className="pending-users-badge">{pendingUsers}</span>
+          <span className="pending-users-arrow">→</span>
+        </Link>
+      )}
 
       {/* Chart + last orders */}
       <div className="dashboard-grid">
