@@ -27,7 +27,12 @@ export default function LoginPage() {
 
     if (!res.ok) { setError(data.error); return; }
 
-    router.push("/");
+    // Redirect based on role
+    if (data.user?.role === "admin") {
+      router.push("/dashboard");
+    } else {
+      router.push("/");
+    }
     router.refresh();
   }
 

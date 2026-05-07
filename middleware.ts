@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { jwtVerify } from "jose";
+
+const SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET ?? "dev-secret-change-in-production"
+);
 
 const PUBLIC_PATHS = [
   "/login",
@@ -8,10 +13,28 @@ const PUBLIC_PATHS = [
   "/api/auth/register",
 ];
 
-export function middleware(request: NextRequest) {
+// These pages belong to the admin panel (route group (admin))
+const ADMIN_PATHS = [
+  "/dashboard",
+  "/orders",
+  "/users",
+  "/audit",
+  "/settings",
+  "/products",
+];
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow public paths and static assets
+  // ── Redirect /admin/* → /* ────────────────────────────────────
+  // The (admin) route group doesn't add /admin to URLs.
+  // So /admin/dashboard doesn't exist — redirect to /dashboard, etc.
+  if (pathname.startsWith("/admin/") || pathname === "/admin") {
+    const newPath = pathname.replace(/^\/admin/, "") || "/dashboard";
+    return NextResponse.redirect(new URL(newPath, request.url));
+  }
+
+  // ── Allow public paths and static assets ─────────────────────
   if (
     PUBLIC_PATHS.some((p) => pathname.startsWith(p)) ||
     pathname.startsWith("/_next") ||
@@ -19,15 +42,37 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/logos") ||
     pathname.startsWith("/images") ||
     pathname.startsWith("/logo") ||
-    pathname.match(/\.(png|jpg|jpeg|svg|ico|pdf|webp)$/)
+    pathname.startsWith("/public") ||
+    /\.(png|jpg|jpeg|svg|ico|pdf|webp|gif)$/.test(pathname)
   ) {
     return NextResponse.next();
   }
 
+  // ── Require auth ─────────────────────────────────────────────
   const token = request.cookies.get("osmar-token")?.value;
 
   if (!token) {
     return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  // ── Decode token + role-based access ─────────────────────────
+  try {
+    const { payload } = await jwtVerify(token, SECRET);
+    const role = payload.role as string | undefined;
+
+    const isAdminPath = ADMIN_PATHS.some(
+      (p) => pathname === p || pathname.startsWith(p + "/")
+    );
+
+    // Customers trying to access admin routes → back to shop
+    if (isAdminPath && role !== "admin") {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+  } catch {
+    // Expired or invalid token
+    const res = NextResponse.redirect(new URL("/login", request.url));
+    res.cookies.set({ name: "osmar-token", value: "", maxAge: 0, path: "/" });
+    return res;
   }
 
   return NextResponse.next();
