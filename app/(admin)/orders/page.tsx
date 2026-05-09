@@ -105,6 +105,7 @@ export default function OrdersPage() {
         ) : orders.length === 0 ? (
           <div className="admin-empty" style={{ padding: 48 }}>No hay órdenes{statusFilter ? ` con estado "${statusFilter}"` : ""}.</div>
         ) : (
+          <div className="orders-scroll-wrap">
           <table className="orders-table">
             <thead>
               <tr>
@@ -164,6 +165,7 @@ export default function OrdersPage() {
               })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

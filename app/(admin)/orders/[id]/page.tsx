@@ -121,6 +121,7 @@ export default function OrderDetailPage() {
           {/* Items */}
           <div className="admin-card">
             <h3 className="admin-card-title">Productos ({itemCount} {itemCount === 1 ? "item" : "items"})</h3>
+            <div className="detail-table-wrap">
             <table className="detail-items-table">
               <thead>
                 <tr>
@@ -156,6 +157,7 @@ export default function OrderDetailPage() {
                 </tr>
               </tfoot>
             </table>
+            </div>
           </div>
 
           {/* Payment info */}
