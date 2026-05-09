@@ -112,5 +112,14 @@ export async function GET(req: NextRequest) {
   // Apply personalized prices
   const products = rawProducts.map(p => applyPrices(p as Parameters<typeof applyPrices>[0], discountPct));
 
-  return NextResponse.json({ products, total, page, limit });
+  const res = NextResponse.json({ products, total, page, limit });
+
+  // Cache-Control: público (guest) o privado (usuario con precio personalizado)
+  if (session && priceListId) {
+    res.headers.set("Cache-Control", "private, no-cache");
+  } else {
+    res.headers.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=60");
+  }
+
+  return res;
 }

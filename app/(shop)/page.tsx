@@ -1,17 +1,26 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import dynamic from "next/dynamic";
 import Header from "@/components/Header";
 import Sidebar, { type Category, PRICE_MAX } from "@/components/Sidebar";
 import ProductCard, { type Product } from "@/components/ProductCard";
-import ProductModal from "@/components/ProductModal";
-import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
 import Hero from "@/components/Hero";
 import QuienesSomos from "@/components/QuienesSomos";
 import BrandBadges from "@/components/BrandBadges";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 import SkeletonCard from "@/components/SkeletonCard";
+
+// Carga diferida: solo cuando el usuario abre modal o carrito
+const ProductModal = dynamic(() => import("@/components/ProductModal"), {
+  loading: () => null,
+  ssr: false,
+});
+const CartDrawer = dynamic(() => import("@/components/CartDrawer"), {
+  loading: () => null,
+  ssr: false,
+});
 
 const LIMIT = 48;
 const SKELETON_COUNT = 12;
@@ -91,7 +100,7 @@ export default function CatalogPage() {
 
   useEffect(() => {
     let cancelled = false;
-    const delay = query ? 300 : 0;
+    const delay = query ? 400 : 0;
     const timer = setTimeout(() => { if (!cancelled) fetchProducts(); }, delay);
     return () => { cancelled = true; clearTimeout(timer); };
   }, [fetchProducts]);

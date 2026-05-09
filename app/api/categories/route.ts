@@ -11,5 +11,8 @@ export async function GET() {
     },
   });
 
-  return NextResponse.json(categories);
+  const res = NextResponse.json(categories);
+  // Las categorías cambian poco: cachear 1 hora en CDN, revalidar en background
+  res.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=300");
+  return res;
 }

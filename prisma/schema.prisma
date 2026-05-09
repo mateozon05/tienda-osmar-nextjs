@@ -63,6 +63,14 @@ model Product {
   productPrices ProductPrice[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+
+  @@index([active])
+  @@index([categoryId])
+  @@index([stock])
+  @@index([price])
+  @@index([name])
+  @@index([active, categoryId])
+  @@index([active, stock])
 }
 
 model ProductPrice {
