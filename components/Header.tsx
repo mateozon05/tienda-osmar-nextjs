@@ -13,6 +13,7 @@ type SearchSuggestion = {
   products: Array<{
     id: number; name: string; code: string; price: number;
     unitPrice: number | null;
+    imageUrl: string | null;
     category: { name: string; emoji: string; slug: string } | null;
   }>;
   categories: Array<{
@@ -165,7 +166,7 @@ export default function Header({
 
           <input
             type="text"
-            placeholder="Buscar productos, códigos..."
+            placeholder="Buscar por nombre, código o categoría..."
             value={query}
             onChange={e => onQueryChange(e.target.value)}
             onFocus={handleFocus}
@@ -226,18 +227,28 @@ export default function Header({
               {suggestions.products.length > 0 && (
                 <div className="sd-section">
                   <p className="sd-label">Productos</p>
-                  {suggestions.products.map(p => (
-                    <button key={p.id} className="sd-item" onClick={() => handleSelectProduct(p.name)}>
-                      <span className="sd-icon sd-icon--emoji">{p.category?.emoji ?? "📦"}</span>
-                      <span className="sd-text">
-                        {p.name}
-                        <span className="sd-code"> · {p.code}</span>
-                      </span>
-                      <span className="sd-meta">
-                        ${(p.unitPrice ?? p.price).toLocaleString("es-AR", { minimumFractionDigits: 0 })}
-                      </span>
-                    </button>
-                  ))}
+                  {suggestions.products.map(p => {
+                    const thumb = p.imageUrl?.includes("cloudinary.com")
+                      ? p.imageUrl.replace("/upload/", "/upload/w_80,h_80,c_pad,b_white,q_auto:good,f_auto/")
+                      : null;
+                    return (
+                      <button key={p.id} className="sd-item sd-item--product" onClick={() => handleSelectProduct(p.name)}>
+                        <span className="sd-thumb">
+                          {thumb
+                            ? <img src={thumb} alt={p.name} className="sd-thumb-img" />
+                            : <span className="sd-thumb-emoji">{p.category?.emoji ?? "📦"}</span>
+                          }
+                        </span>
+                        <span className="sd-text">
+                          {p.name}
+                          <span className="sd-code"> · {p.code}</span>
+                        </span>
+                        <span className="sd-meta">
+                          ${(p.unitPrice ?? p.price).toLocaleString("es-AR", { minimumFractionDigits: 0 })}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
 

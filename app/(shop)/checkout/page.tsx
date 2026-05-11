@@ -93,8 +93,32 @@ export default function CheckoutPage() {
     );
   }
 
+  const STEPS = [
+    { label: "Carrito",  icon: "🛍️" },
+    { label: "Datos",    icon: "📋" },
+    { label: "Pago",     icon: "💳" },
+    { label: "Listo",    icon: "✅" },
+  ];
+  const currentStep = 1; // 0-indexed: estamos en "Datos"
+
   return (
     <div className="checkout-page">
+
+      {/* ── Steps indicator ── */}
+      <div className="checkout-steps">
+        {STEPS.map((step, i) => (
+          <div key={i} className="checkout-step-group">
+            <div className={`checkout-step${i <= currentStep ? " checkout-step--done" : ""}${i === currentStep ? " checkout-step--current" : ""}`}>
+              <span className="cstep-icon">{step.icon}</span>
+              <span className="cstep-label">{step.label}</span>
+            </div>
+            {i < STEPS.length - 1 && (
+              <div className={`cstep-line${i < currentStep ? " cstep-line--done" : ""}`} />
+            )}
+          </div>
+        ))}
+      </div>
+
       <div className="checkout-container">
 
         {/* ── FORMULARIO ── */}

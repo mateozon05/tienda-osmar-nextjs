@@ -2758,3 +2758,145 @@ html, body {
   main.site-main { padding: 10px 10px 40px; }
   .pagination-info { font-size: 11px; }
 }
+
+/* ══════════════════════════════════════════
+   SEARCH DROPDOWN — PRODUCT THUMBNAILS
+══════════════════════════════════════════ */
+.sd-item--product { align-items: center; gap: 10px; }
+
+.sd-thumb {
+  flex-shrink: 0;
+  width: 40px; height: 40px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.sd-thumb-img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+}
+.sd-thumb-emoji { font-size: 20px; line-height: 1; }
+
+/* ══════════════════════════════════════════
+   BREADCRUMB
+══════════════════════════════════════════ */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 0 10px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.bc-link {
+  display: flex; align-items: center; gap: 4px;
+  background: none; border: none; padding: 0; cursor: pointer;
+  color: var(--text-muted);
+  font-size: 13px;
+  transition: color .15s;
+}
+.bc-link:hover { color: var(--c1); }
+.bc-sep { color: var(--border); font-size: 15px; }
+.bc-active { color: var(--c1); font-weight: 600; }
+
+/* ══════════════════════════════════════════
+   MOBILE CATEGORY CHIPS
+══════════════════════════════════════════ */
+.mobile-cat-chips {
+  display: none; /* hidden on desktop */
+}
+
+/* ══════════════════════════════════════════
+   EMPTY STATE — WHATSAPP BUTTON
+══════════════════════════════════════════ */
+.empty-btn--wa {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 20px;
+  background: #25D366;
+  color: #fff;
+  border-radius: 12px;
+  font-weight: 600; font-size: 14px;
+  text-decoration: none;
+  border: none; cursor: pointer;
+  transition: background .15s, transform .12s;
+}
+.empty-btn--wa:hover { background: #1ebe5e; transform: translateY(-1px); }
+
+/* ══════════════════════════════════════════
+   CHECKOUT STEPS
+══════════════════════════════════════════ */
+.checkout-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 28px 20px 8px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.checkout-step-group {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+.checkout-step {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  flex-shrink: 0;
+  opacity: .35;
+  transition: opacity .2s;
+}
+.checkout-step--done { opacity: .6; }
+.checkout-step--current { opacity: 1; }
+.cstep-icon { font-size: 24px; line-height: 1; }
+.cstep-label { font-size: 11px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+.checkout-step--done .cstep-label,
+.checkout-step--current .cstep-label { color: var(--c1); }
+.cstep-line {
+  flex: 1;
+  height: 2px;
+  background: var(--border);
+  margin: 0 4px;
+  margin-bottom: 14px; /* align with icons */
+}
+.cstep-line--done { background: var(--c1); }
+
+/* Mobile chips on mobile only */
+@media (max-width: 767px) {
+  .mobile-cat-chips {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 0 0 12px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .mobile-cat-chips::-webkit-scrollbar { display: none; }
+
+  .cat-chip {
+    flex-shrink: 0;
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
+    white-space: nowrap;
+  }
+  .cat-chip--active {
+    background: var(--c1);
+    border-color: var(--c1);
+    color: #fff;
+  }
+
+  /* Breadcrumb hidden on mobile (chips replace it) */
+  .breadcrumb { display: none; }
+
+  /* Checkout steps compact */
+  .cstep-icon { font-size: 18px; }
+  .cstep-label { font-size: 10px; }
+  .checkout-steps { padding: 16px 12px 4px; }
+}

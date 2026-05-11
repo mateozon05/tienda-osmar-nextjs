@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
         code: true,
         price: true,
         unitPrice: true,
+        imageUrl: true,
         category: { select: { name: true, emoji: true, slug: true } },
       },
     }),

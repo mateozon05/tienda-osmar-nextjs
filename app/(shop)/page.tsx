@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Header from "@/components/Header";
 import Sidebar, { type Category, PRICE_MAX } from "@/components/Sidebar";
+import Breadcrumb from "@/components/Breadcrumb";
 import ProductCard, { type Product } from "@/components/ProductCard";
 import Footer from "@/components/Footer";
 import Hero from "@/components/Hero";
@@ -171,6 +172,33 @@ export default function CatalogPage() {
         />
 
         <main className="site-main" id="shop-main">
+
+          {/* ── Mobile category chips ── */}
+          <div className="mobile-cat-chips">
+            <button
+              className={`cat-chip${activeCategory === "todos" ? " cat-chip--active" : ""}`}
+              onClick={() => handleCategorySelect("todos")}
+            >
+              🏠 Todos
+            </button>
+            {categories.filter(c => c._count.products > 0).map(cat => (
+              <button
+                key={cat.slug}
+                className={`cat-chip${activeCategory === cat.slug ? " cat-chip--active" : ""}`}
+                onClick={() => handleCategorySelect(cat.slug)}
+              >
+                {cat.emoji} {cat.name}
+              </button>
+            ))}
+          </div>
+
+          {/* ── Breadcrumb ── */}
+          <Breadcrumb
+            categoryName={activeCategory !== "todos" ? (categories.find(c => c.slug === activeCategory)?.name) : undefined}
+            query={query || undefined}
+            onHome={() => { handleCategorySelect("todos"); handleQueryChange(""); }}
+          />
+
           <div className="main-header">
             <h2>
               {activeLabel}
@@ -198,7 +226,7 @@ export default function CatalogPage() {
             <div className="empty-state">
               <div className="empty-icon">🔍</div>
               <h3 className="empty-title">
-                {query ? `Sin resultados para "${query}"` : "No hay productos con estos filtros"}
+                {query ? `No encontramos "${query}"` : "No hay productos con estos filtros"}
               </h3>
               <p className="empty-sub">
                 {query
@@ -220,6 +248,16 @@ export default function CatalogPage() {
                   <button className="empty-btn empty-btn--ghost" onClick={() => handleCategorySelect("todos")}>
                     Ver todos los productos
                   </button>
+                )}
+                {query && (
+                  <a
+                    href={`https://wa.me/541150179447?text=${encodeURIComponent(`Hola, estoy buscando: ${query}`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="empty-btn empty-btn--wa"
+                  >
+                    💬 Consultar por WhatsApp
+                  </a>
                 )}
               </div>
             </div>
