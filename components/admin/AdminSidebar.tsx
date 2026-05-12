@@ -77,8 +77,11 @@ export default function AdminSidebar() {
         </nav>
 
         <div className="admin-sidebar-footer">
-          <Link href="/" className="admin-nav-item" style={{ fontSize: 13 }}>
-            <span className="admin-nav-icon">🛍️</span>
+          <Link href="/" className="admin-store-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <path d="M9 22V12h6v10"/>
+            </svg>
             Ver tienda
           </Link>
           <button className="admin-logout" onClick={handleLogout}>
@@ -94,13 +97,21 @@ export default function AdminSidebar() {
         <div className="admin-mobile-topbar-title">
           🧹 Osmar Admin
         </div>
-        <button
-          className="admin-hamburger"
-          onClick={() => setDrawerOpen(true)}
-          aria-label="Abrir menú"
-        >
-          <IconMenu />
-        </button>
+        <div className="admin-topbar-actions">
+          <Link href="/" className="admin-topbar-store-btn" title="Ver tienda" aria-label="Ver tienda">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <path d="M9 22V12h6v10"/>
+            </svg>
+          </Link>
+          <button
+            className="admin-hamburger"
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Abrir menú"
+          >
+            <IconMenu />
+          </button>
+        </div>
       </div>
 
       {/* ════════════════════════════════════════

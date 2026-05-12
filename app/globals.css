@@ -2900,3 +2900,149 @@ html, body {
   .cstep-label { font-size: 10px; }
   .checkout-steps { padding: 16px 12px 4px; }
 }
+
+/* ══════════════════════════════════════════
+   HEADER — PANEL ADMIN BUTTON
+══════════════════════════════════════════ */
+.btn-admin-panel {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 12px;
+  background: #1A1A2E;
+  color: #fff;
+  border-radius: 10px;
+  font-size: 13px; font-weight: 600;
+  text-decoration: none;
+  border: 1.5px solid rgba(255,110,0,.35);
+  transition: background .18s, border-color .18s, transform .12s;
+  white-space: nowrap;
+}
+.btn-admin-panel:hover {
+  background: var(--c1);
+  border-color: var(--c1);
+  transform: translateY(-1px);
+}
+.btn-admin-panel-label { /* hide on very small screens via mobile rule below */ }
+
+/* ── User trigger button ── */
+.user-trigger {
+  display: flex; align-items: center; gap: 5px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text);
+  font-size: 13.5px; font-weight: 500;
+  padding: 5px 8px;
+  border-radius: 8px;
+  transition: background .15s;
+  position: relative;
+}
+.user-trigger:hover { background: var(--surface); }
+.user-trigger--admin { color: var(--c1); }
+
+.user-admin-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--c1);
+  flex-shrink: 0;
+}
+
+/* ── User dropdown ── */
+.user-menu { position: relative; }
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 210px;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.12);
+  overflow: hidden;
+  z-index: 200;
+  animation: ud-in .15s ease;
+}
+@keyframes ud-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ud-header {
+  padding: 14px 16px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.ud-name  { font-weight: 700; font-size: 14px; color: var(--text); }
+.ud-email { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+.ud-role-badge {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 8px;
+  background: #FFF3E0;
+  color: var(--c1);
+  border-radius: 20px;
+  font-size: 11px; font-weight: 700;
+}
+
+.ud-item {
+  display: flex; align-items: center; gap: 9px;
+  width: 100%;
+  padding: 11px 16px;
+  background: none; border: none;
+  text-align: left; text-decoration: none;
+  font-size: 13.5px; color: var(--text);
+  cursor: pointer;
+  transition: background .13s, color .13s;
+}
+.ud-item:hover { background: #FFF3E0; color: var(--c1); }
+.ud-item--danger { color: #E53E3E; }
+.ud-item--danger:hover { background: #FFF5F5; color: #C53030; }
+
+.ud-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 3px 0;
+}
+
+/* ══════════════════════════════════════════
+   ADMIN SIDEBAR — VER TIENDA PROMINENTE
+══════════════════════════════════════════ */
+.admin-store-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  margin: 0 8px 6px;
+  background: rgba(255,110,0,.12);
+  color: var(--c1, #FF6E00);
+  font-size: 13px; font-weight: 600;
+  text-decoration: none;
+  border: 1px solid rgba(255,110,0,.25);
+  transition: background .15s, transform .12s;
+}
+.admin-store-link:hover {
+  background: rgba(255,110,0,.22);
+  transform: translateY(-1px);
+}
+
+/* ── Mobile topbar actions ── */
+.admin-topbar-actions {
+  display: flex; align-items: center; gap: 4px;
+}
+.admin-topbar-store-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  color: rgba(255,255,255,.75);
+  text-decoration: none;
+  transition: color .15s, background .15s;
+}
+.admin-topbar-store-btn:hover {
+  color: #fff;
+  background: rgba(255,255,255,.1);
+}
+
+/* Mobile: hide "Admin" text, show only icon */
+@media (max-width: 767px) {
+  .btn-admin-panel-label { display: none; }
+  .btn-admin-panel { padding: 7px 9px; }
+  /* Dropdown right-aligned on mobile */
+  .user-dropdown { right: -8px; min-width: 190px; }
+}

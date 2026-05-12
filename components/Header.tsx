@@ -61,9 +61,11 @@ export default function Header({
   const [user, setUser] = useState<User>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [focused, setFocused]   = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<SearchSuggestion>({ products: [], categories: [] });
   const [recents, setRecents]   = useState<string[]>([]);
   const wrapRef  = useRef<HTMLDivElement>(null);
+  const menuRef  = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -90,6 +92,7 @@ export default function Header({
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setFocused(false);
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
     }
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -133,6 +136,7 @@ export default function Header({
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
+    setMenuOpen(false);
   }
 
   const hasSuggestions = suggestions.products.length > 0 || suggestions.categories.length > 0;
@@ -258,6 +262,18 @@ export default function Header({
 
         {/* ── Actions ── */}
         <div className="header-actions">
+
+          {/* Admin panel shortcut */}
+          {user?.role === "admin" && (
+            <Link href="/dashboard" className="btn-admin-panel" title="Ir al Panel Admin">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+              </svg>
+              <span className="btn-admin-panel-label">Admin</span>
+            </Link>
+          )}
+
           {/* Favorites link */}
           <Link href="/favorites" className="btn-fav-link" aria-label="Mis favoritos">
             <svg width="17" height="17" viewBox="0 0 24 24" fill={favCount > 0 ? "currentColor" : "none"}
@@ -266,15 +282,58 @@ export default function Header({
             </svg>
             {favCount > 0 && <span className="fav-header-badge">{favCount}</span>}
           </Link>
+
+          {/* User menu */}
           {user ? (
-            <div className="user-menu">
-              <span className="user-name">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 4, verticalAlign: "middle" }}>
+            <div className="user-menu" ref={menuRef}>
+              <button
+                className={`user-trigger${user.role === "admin" ? " user-trigger--admin" : ""}`}
+                onClick={() => setMenuOpen(v => !v)}
+                aria-label="Menú de usuario"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
                 </svg>
-                {user.name.split(" ")[0]}
-              </span>
-              <button className="btn-logout" onClick={handleLogout}>Salir</button>
+                <span className="user-name">{user.name.split(" ")[0]}</span>
+                {user.role === "admin" && <span className="user-admin-dot" title="Administrador" />}
+              </button>
+
+              {menuOpen && (
+                <div className="user-dropdown">
+                  {/* Header info */}
+                  <div className="ud-header">
+                    <div className="ud-name">{user.name}</div>
+                    <div className="ud-email">{user.email}</div>
+                    {user.role === "admin" && (
+                      <span className="ud-role-badge">⚙️ Administrador</span>
+                    )}
+                  </div>
+
+                  {/* Admin links */}
+                  {user.role === "admin" && (
+                    <>
+                      <Link href="/dashboard" className="ud-item" onClick={() => setMenuOpen(false)}>
+                        <span>📊</span> Panel Admin
+                      </Link>
+                      <Link href="/users" className="ud-item" onClick={() => setMenuOpen(false)}>
+                        <span>👤</span> Gestionar usuarios
+                      </Link>
+                      <Link href="/orders" className="ud-item" onClick={() => setMenuOpen(false)}>
+                        <span>📦</span> Ver pedidos
+                      </Link>
+                      <div className="ud-divider" />
+                    </>
+                  )}
+
+                  {/* Common links */}
+                  <Link href="/favorites" className="ud-item" onClick={() => setMenuOpen(false)}>
+                    <span>❤️</span> Mis favoritos
+                  </Link>
+                  <button className="ud-item ud-item--danger" onClick={handleLogout}>
+                    <span>🚪</span> Cerrar sesión
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <button className="btn-login" onClick={() => setAuthOpen(true)}>Ingresar</button>
