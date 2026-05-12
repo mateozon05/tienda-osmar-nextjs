@@ -96,7 +96,7 @@ export default function Footer() {
           <p className="footer-tagline">
             Distribuidora mayorista de productos de limpieza e higiene para empresas y comercios.
           </p>
-          <p className="footer-since">Desde 2010</p>
+          <p className="footer-since">Desde 1983</p>
           <div className="footer-social">
             <a
               href="https://www.instagram.com/distri_osmar/"
