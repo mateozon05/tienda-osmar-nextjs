@@ -8,7 +8,7 @@ type CartItem = { productId: number; quantity: number };
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { items, guestEmail, guestName, guestPhone, shippingAddress, shippingCity, shippingMethod, notes } = body;
+  const { items, guestEmail, guestName, guestPhone, shippingAddress, shippingCity, shippingMethod, notes, paymentMethod } = body;
 
   if (!items?.length) {
     return NextResponse.json({ error: "El carrito está vacío", code: "EMPTY_CART" }, { status: 400 });
@@ -45,8 +45,9 @@ export async function POST(req: NextRequest) {
       guestPhone: session ? null : (guestPhone ?? null),
       shippingAddress,
       shippingCity,
-      shippingMethod: shippingMethod ?? "envio",
-      notes: notes ?? null,
+      shippingMethod:  shippingMethod ?? "envio",
+      paymentMethod:   paymentMethod  ?? "mercadopago",
+      notes:           notes ?? null,
       total,
       status: "pendiente",
       items: {

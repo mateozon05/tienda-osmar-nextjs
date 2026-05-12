@@ -10,6 +10,11 @@ type Settings = {
   store_hours: string;
   store_whatsapp: string;
   mp_dashboard_url: string;
+  bank_name: string;
+  bank_account_owner: string;
+  bank_cbu: string;
+  bank_alias: string;
+  bank_cuit: string;
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -20,6 +25,11 @@ const DEFAULT_SETTINGS: Settings = {
   store_hours: "",
   store_whatsapp: "",
   mp_dashboard_url: "",
+  bank_name: "",
+  bank_account_owner: "",
+  bank_cbu: "",
+  bank_alias: "",
+  bank_cuit: "",
 };
 
 export default function SettingsPage() {
@@ -111,7 +121,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Mercado Pago */}
-        <div className="admin-card" style={{ marginBottom: 24 }}>
+        <div className="admin-card" style={{ marginBottom: 16 }}>
           <h3 className="admin-card-title">Mercado Pago</h3>
           <div className="settings-grid">
             <Field label="URL del panel MP" field="mp_dashboard_url" type="url" placeholder="https://www.mercadopago.com.ar/activities" />
@@ -119,6 +129,21 @@ export default function SettingsPage() {
           <p className="settings-hint">
             Link directo a tu panel de actividades en Mercado Pago para revisar cobros.
           </p>
+        </div>
+
+        {/* Transferencia bancaria */}
+        <div className="admin-card" style={{ marginBottom: 24 }}>
+          <h3 className="admin-card-title">💳 Cuenta bancaria (transferencias)</h3>
+          <p className="settings-hint" style={{ marginBottom: 12 }}>
+            Estos datos se muestran al cliente cuando elige "Transferencia bancaria" en el checkout.
+          </p>
+          <div className="settings-grid">
+            <Field label="Banco" field="bank_name" placeholder="Banco Galicia / Mercado Pago / etc." />
+            <Field label="Titular de la cuenta" field="bank_account_owner" placeholder="Osmar González" />
+            <Field label="CBU" field="bank_cbu" placeholder="0720599020000057960059" />
+            <Field label="Alias" field="bank_alias" placeholder="osmar.dist.mp" />
+            <Field label="CUIT / DNI del titular" field="bank_cuit" placeholder="20-12345678-9" />
+          </div>
         </div>
 
         {/* Actions */}

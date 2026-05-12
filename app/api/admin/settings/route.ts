@@ -3,13 +3,19 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const DEFAULTS: Record<string, string> = {
-  store_name: "Distribuidora Osmar",
-  store_phone: "",
-  store_email: "",
-  store_address: "Tigre, Buenos Aires",
-  store_hours: "Lunes a Viernes 9:00–18:00",
-  store_whatsapp: "",
-  mp_dashboard_url: "https://www.mercadopago.com.ar/activities",
+  store_name:          "Distribuidora Osmar",
+  store_phone:         "",
+  store_email:         "",
+  store_address:       "Tigre, Buenos Aires",
+  store_hours:         "Lunes a Viernes 9:00–18:00",
+  store_whatsapp:      "",
+  mp_dashboard_url:    "https://www.mercadopago.com.ar/activities",
+  // Cuenta bancaria para transferencias
+  bank_name:           "",
+  bank_account_owner:  "",
+  bank_cbu:            "",
+  bank_alias:          "",
+  bank_cuit:           "",
 };
 
 export async function GET() {

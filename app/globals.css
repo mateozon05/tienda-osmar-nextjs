@@ -3046,3 +3046,140 @@ html, body {
   /* Dropdown right-aligned on mobile */
   .user-dropdown { right: -8px; min-width: 190px; }
 }
+
+/* ══════════════════════════════════════════
+   CHECKOUT — PAYMENT METHOD SELECTOR
+══════════════════════════════════════════ */
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.payment-opt {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  background: var(--surface);
+  transition: border-color .18s, background .18s, box-shadow .18s;
+  position: relative;
+}
+.payment-opt input[type="radio"] { display: none; }
+.payment-opt:hover { border-color: var(--c1); background: #FFF8F3; }
+.payment-opt.active {
+  border-color: var(--c1);
+  background: #FFF3E0;
+  box-shadow: 0 0 0 3px rgba(255,110,0,.12);
+}
+.payment-opt.active::after {
+  content: "✓";
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  width: 22px; height: 22px;
+  background: var(--c1); color: #fff;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+}
+.payment-icon { font-size: 26px; flex-shrink: 0; line-height: 1; }
+.payment-opt strong { display: block; font-size: 14px; color: var(--text); margin-bottom: 2px; }
+.payment-opt small  { font-size: 12px; color: var(--text-muted); }
+
+.payment-bank-preview {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #E8F5E9;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #2E7D32;
+}
+
+/* ══════════════════════════════════════════
+   CHECKOUT — SUCCESS SCREEN
+══════════════════════════════════════════ */
+.checkout-success-page {
+  min-height: 80vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px 16px;
+}
+.cs-card {
+  max-width: 540px; width: 100%;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 40px 36px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,.07);
+}
+.cs-icon { font-size: 56px; line-height: 1; margin-bottom: 14px; }
+.cs-title { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 10px; }
+.cs-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
+.cs-sub strong { color: var(--text); }
+
+.cs-info-box {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+.cs-info-icon { font-size: 28px; flex-shrink: 0; }
+.cs-info-box strong { display: block; margin-bottom: 4px; font-size: 14px; }
+.cs-info-box p { font-size: 13px; color: var(--text-muted); margin: 0; }
+
+.cs-bank-details {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  text-align: left;
+}
+.cs-bank-details h4 { font-size: 15px; font-weight: 700; margin-bottom: 14px; color: var(--text); }
+.cs-bank-grid {
+  display: grid; grid-template-columns: auto 1fr;
+  gap: 8px 16px; font-size: 14px;
+}
+.cs-bank-grid span { color: var(--text-muted); white-space: nowrap; }
+.cs-bank-grid strong { color: var(--text); word-break: break-all; }
+.cs-cbu { cursor: pointer; transition: color .15s; }
+.cs-cbu:hover { color: var(--c1); }
+.cs-copy-hint { font-size: 11px; opacity: .6; }
+
+.cs-wa-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 24px;
+  background: #25D366; color: #fff;
+  border-radius: 12px; border: none;
+  font-weight: 700; font-size: 14px;
+  text-decoration: none; cursor: pointer;
+  transition: background .15s;
+  margin-bottom: 20px;
+}
+.cs-wa-btn:hover { background: #1ebe5e; }
+
+.cs-actions {
+  display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+}
+.cs-btn {
+  display: inline-flex; align-items: center;
+  padding: 11px 22px; border-radius: 12px;
+  font-size: 14px; font-weight: 600;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: background .15s, transform .12s;
+}
+.cs-btn--primary  { background: var(--c1); color: #fff; }
+.cs-btn--primary:hover  { background: #e05e00; transform: translateY(-1px); }
+.cs-btn--secondary { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
+.cs-btn--secondary:hover { background: #f5f5f5; }
+
+@media (max-width: 767px) {
+  .cs-card { padding: 28px 20px; }
+  .cs-title { font-size: 19px; }
+  .cs-bank-grid { font-size: 13px; gap: 6px 12px; }
+}

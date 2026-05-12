@@ -118,6 +118,7 @@ model Order {
   shippingAddress String
   shippingCity    String
   shippingMethod  String      @default("envio")
+  paymentMethod   String      @default("mercadopago") // mercadopago | transferencia | efectivo
   mpPaymentId     String?
   mpStatus        String?
   notes           String?
