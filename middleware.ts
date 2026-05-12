@@ -24,7 +24,9 @@ const ADMIN_PATHS = [
 
 // Accessible ONLY to superadmin
 const SUPERADMIN_PATHS = [
+  "/admins",
   "/settings",
+  "/api/admin/admins",
   "/api/admin/settings",
   "/api/admin/price-lists",
 ];

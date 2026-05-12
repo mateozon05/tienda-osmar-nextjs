@@ -46,6 +46,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Block inactive accounts (deactivated by superadmin)
+  if (user.status === "inactive") {
+    return NextResponse.json(
+      { error: "Tu cuenta ha sido desactivada. Contactá al administrador.", code: "ACCOUNT_INACTIVE" },
+      { status: 403 }
+    );
+  }
+
+  // Record last login (fire-and-forget, don't block response)
+  prisma.user.update({ where: { id: user.id }, data: { lastLogin: new Date() } }).catch(() => {});
+
   const token = await signToken({ userId: user.id, email: user.email, role: user.role });
   const res = NextResponse.json({
     success: true,

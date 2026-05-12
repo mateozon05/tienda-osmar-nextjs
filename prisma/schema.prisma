@@ -32,6 +32,7 @@ model User {
   priceList   PriceList? @relation(fields: [priceListId], references: [id])
   orders      Order[]
   cart        Cart?
+  lastLogin   DateTime?
   createdAt   DateTime   @default(now())
 }
 

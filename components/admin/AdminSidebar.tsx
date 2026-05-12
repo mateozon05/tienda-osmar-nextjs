@@ -15,7 +15,8 @@ const NAV = [
 
 // Items exclusivos de superadmin
 const SUPERADMIN_NAV = [
-  { href: "/settings",   label: "Configuración", icon: "⚙️" },
+  { href: "/admins",   label: "Administradores", icon: "👑" },
+  { href: "/settings", label: "Configuración",   icon: "⚙️" },
 ];
 
 // SVG icons
