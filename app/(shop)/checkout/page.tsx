@@ -19,11 +19,14 @@ type PaymentMethod = "mercadopago" | "transferencia" | "efectivo";
 
 type BankSettings = {
   bank_name: string;
-  bank_account_owner: string;
+  bank_holder: string;
   bank_cbu: string;
   bank_alias: string;
   bank_cuit: string;
-  store_whatsapp: string;
+  social_whatsapp: string;
+  payment_efectivo: string;
+  payment_transferencia: string;
+  payment_mercadopago: string;
 };
 
 type OrderSuccess = {
@@ -74,14 +77,15 @@ export default function CheckoutPage() {
   const [error, setError] = useState("");
   const [orderSuccess, setOrderSuccess] = useState<OrderSuccess | null>(null);
   const [bankSettings, setBankSettings] = useState<BankSettings>({
-    bank_name: "", bank_account_owner: "", bank_cbu: "",
-    bank_alias: "", bank_cuit: "", store_whatsapp: "",
+    bank_name: "", bank_holder: "", bank_cbu: "", bank_alias: "", bank_cuit: "",
+    social_whatsapp: "541150179447",
+    payment_efectivo: "true", payment_transferencia: "true", payment_mercadopago: "true",
   });
 
   useEffect(() => {
     fetch("/api/settings")
       .then(r => r.ok ? r.json() : null)
-      .then(d => d && setBankSettings(d.settings))
+      .then(d => d?.settings && setBankSettings(prev => ({ ...prev, ...d.settings })))
       .catch(() => {});
   }, []);
 
@@ -161,7 +165,7 @@ export default function CheckoutPage() {
 
   // ── Success screen (efectivo / transferencia) ───────────────
   if (orderSuccess) {
-    const wa = bankSettings.store_whatsapp || "541150179447";
+    const wa = bankSettings.social_whatsapp || "541150179447";
     const waMsg = encodeURIComponent(`Hola, realicé la transferencia para el pedido #${orderSuccess.orderId} por $${orderSuccess.total.toLocaleString("es-AR")}.`);
     return (
       <div className="checkout-success-page">
@@ -198,7 +202,7 @@ export default function CheckoutPage() {
                 <h4>🏦 Datos para la transferencia</h4>
                 <div className="cs-bank-grid">
                   {bankSettings.bank_name         && <><span>Banco</span>  <strong>{bankSettings.bank_name}</strong></>}
-                  {bankSettings.bank_account_owner && <><span>Titular</span><strong>{bankSettings.bank_account_owner}</strong></>}
+                  {bankSettings.bank_holder && <><span>Titular</span><strong>{bankSettings.bank_holder}</strong></>}
                   {bankSettings.bank_cbu           && (
                     <><span>CBU</span>
                     <strong className="cs-cbu" onClick={() => navigator.clipboard?.writeText(bankSettings.bank_cbu)}>
@@ -326,7 +330,9 @@ export default function CheckoutPage() {
             <section className="form-section">
               <h3>Método de pago</h3>
               <div className="payment-methods">
-                {PAYMENT_METHODS.map(pm => (
+                {PAYMENT_METHODS.filter(pm =>
+                  bankSettings[`payment_${pm.id}` as keyof BankSettings] !== "false"
+                ).map(pm => (
                   <label
                     key={pm.id}
                     className={`payment-opt${paymentMethod === pm.id ? " active" : ""}`}

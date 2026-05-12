@@ -3456,3 +3456,264 @@ html, body {
   border-top: 1px solid #F3F4F6;
 }
 .adm-modal-foot .adm-btn { flex: 1; justify-content: center; }
+
+/* ══════════════════════════════════════════
+   SETTINGS PAGE — Panel de Configuración
+══════════════════════════════════════════ */
+
+/* Save button */
+.sett-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 20px;
+  background: var(--c1);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s, transform .1s;
+  white-space: nowrap;
+}
+.sett-save-btn:hover:not(:disabled) { background: var(--c1h); }
+.sett-save-btn:active:not(:disabled) { transform: scale(.97); }
+.sett-save-btn:disabled { opacity: .6; cursor: not-allowed; }
+.sett-save-btn--saved {
+  background: #059669;
+}
+.sett-save-btn--saved:hover { background: #047857; }
+
+/* Tabs bar */
+.sett-tabs {
+  display: flex;
+  gap: 4px;
+  background: #F3F4F6;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.sett-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6B7280;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s, color .15s, box-shadow .15s;
+}
+.sett-tab:hover { color: #111827; background: rgba(255,255,255,.6); }
+.sett-tab--active {
+  background: #fff;
+  color: var(--c1);
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0,0,0,.1);
+}
+.sett-tab-label { display: inline; }
+@media (max-width: 600px) {
+  .sett-tab-label { display: none; }
+  .sett-tab { padding: 8px 10px; font-size: 18px; }
+}
+
+/* Panel */
+.sett-panel {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 14px;
+  padding: 28px;
+  max-width: 680px;
+}
+
+/* Section */
+.sett-section { display: flex; flex-direction: column; gap: 0; }
+.sett-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 20px;
+}
+.sett-section-sub {
+  font-size: 13px;
+  color: #6B7280;
+  margin-bottom: 16px;
+  margin-top: -12px;
+}
+
+/* Field */
+.sett-field { margin-bottom: 16px; }
+.sett-field:last-child { margin-bottom: 0; }
+.sett-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 5px;
+}
+.sett-input {
+  width: 100%;
+  padding: 9px 13px;
+  border: 1.5px solid #D1D5DB;
+  border-radius: 9px;
+  font-size: 13.5px;
+  color: #111827;
+  background: #fff;
+  transition: border-color .15s, box-shadow .15s;
+}
+.sett-input:focus {
+  outline: none;
+  border-color: var(--c1);
+  box-shadow: 0 0 0 3px rgba(255,117,31,.12);
+}
+.sett-help {
+  font-size: 11.5px;
+  color: #9CA3AF;
+  margin-top: 4px;
+}
+
+/* Info box */
+.sett-info-box {
+  margin-top: 20px;
+  padding: 12px 16px;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #1D4ED8;
+  line-height: 1.5;
+}
+
+/* Toggle */
+.sett-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 10px;
+  background: #F9FAFB;
+  margin-bottom: 10px;
+  transition: border-color .15s, background .15s;
+}
+.sett-toggle-row:last-of-type { margin-bottom: 0; }
+.sett-toggle-row--on {
+  border-color: #FED7AA;
+  background: #FFF7ED;
+}
+.sett-toggle-text { flex: 1; }
+.sett-toggle-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+.sett-toggle-desc {
+  font-size: 12px;
+  color: #6B7280;
+  margin: 2px 0 0;
+}
+.sett-toggle-btn {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  background: #D1D5DB;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background .2s;
+}
+.sett-toggle-btn--on { background: var(--c1); }
+.sett-toggle-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  transition: transform .2s;
+  display: block;
+}
+.sett-toggle-btn--on .sett-toggle-knob {
+  transform: translateX(20px);
+}
+
+/* Status grid */
+.sett-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+@media (max-width: 480px) { .sett-status-grid { grid-template-columns: 1fr; } }
+.sett-status-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  background: #F9FAFB;
+  text-decoration: none;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background .15s, border-color .15s;
+}
+.sett-status-card:hover { background: #F3F4F6; border-color: #D1D5DB; }
+.sett-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10B981;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(16,185,129,.2);
+}
+.sett-status-label { flex: 1; }
+
+/* Actions */
+.sett-actions-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 10px;
+}
+.sett-action-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+.sett-action-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  background: #fff;
+  text-decoration: none;
+  color: #111827;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background .15s, border-color .15s;
+  font-family: inherit;
+}
+.sett-action-row:hover { background: #F9FAFB; border-color: #D1D5DB; }
+.sett-action-icon { font-size: 20px; flex-shrink: 0; }
+.sett-action-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sett-action-info strong { font-size: 13.5px; color: #111827; }
+.sett-action-info span  { font-size: 12px; color: #6B7280; }
+.sett-action-arrow { font-size: 13px; color: var(--c1); font-weight: 600; white-space: nowrap; }
