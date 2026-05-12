@@ -13,22 +13,26 @@ const PUBLIC_PATHS = [
   "/api/auth/register",
 ];
 
-// These pages belong to the admin panel (route group (admin))
+// Accessible to both admin and superadmin
 const ADMIN_PATHS = [
   "/dashboard",
   "/orders",
   "/users",
   "/audit",
-  "/settings",
   "/products",
+];
+
+// Accessible ONLY to superadmin
+const SUPERADMIN_PATHS = [
+  "/settings",
+  "/api/admin/settings",
+  "/api/admin/price-lists",
 ];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ── Redirect /admin/* → /* ────────────────────────────────────
-  // The (admin) route group doesn't add /admin to URLs.
-  // So /admin/dashboard doesn't exist — redirect to /dashboard, etc.
   if (pathname.startsWith("/admin/") || pathname === "/admin") {
     const newPath = pathname.replace(/^\/admin/, "") || "/dashboard";
     return NextResponse.redirect(new URL(newPath, request.url));
@@ -50,7 +54,6 @@ export async function middleware(request: NextRequest) {
 
   // ── Require auth ─────────────────────────────────────────────
   const token = request.cookies.get("osmar-token")?.value;
-
   if (!token) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
@@ -60,13 +63,24 @@ export async function middleware(request: NextRequest) {
     const { payload } = await jwtVerify(token, SECRET);
     const role = payload.role as string | undefined;
 
+    const isAdmin      = role === "admin" || role === "superadmin";
+    const isSuperAdmin = role === "superadmin";
+
     const isAdminPath = ADMIN_PATHS.some(
       (p) => pathname === p || pathname.startsWith(p + "/")
     );
+    const isSuperAdminPath = SUPERADMIN_PATHS.some(
+      (p) => pathname === p || pathname.startsWith(p + "/")
+    );
 
-    // Customers trying to access admin routes → back to shop
-    if (isAdminPath && role !== "admin") {
+    // Customers → back to shop
+    if ((isAdminPath || isSuperAdminPath) && !isAdmin) {
       return NextResponse.redirect(new URL("/", request.url));
+    }
+
+    // Admin (non-super) trying to access superadmin-only paths → dashboard
+    if (isSuperAdminPath && !isSuperAdmin) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   } catch {
     // Expired or invalid token

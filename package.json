@@ -11,7 +11,8 @@
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset --force",
     "sync:sipe": "npx tsx --env-file=.env scripts/sync-sipe-stock.ts",
-    "import:sipe": "npx tsx --env-file=.env scripts/import-sipe-products.ts"
+    "import:sipe": "npx tsx --env-file=.env scripts/import-sipe-products.ts",
+    "create:superadmin": "npx tsx --env-file=.env scripts/create-superadmin.ts"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"

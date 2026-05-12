@@ -7,13 +7,14 @@ export const metadata = { title: "Admin – Distribuidora Osmar" };
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
 
-  if (!session || session.role !== "admin") {
+  const isAdmin = session?.role === "admin" || session?.role === "superadmin";
+  if (!isAdmin) {
     redirect("/");
   }
 
   return (
     <div className="admin-layout">
-      <AdminSidebar />
+      <AdminSidebar role={session!.role} />
       <main className="admin-main">{children}</main>
     </div>
   );

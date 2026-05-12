@@ -264,8 +264,8 @@ export default function Header({
         <div className="header-actions">
 
           {/* Admin panel shortcut */}
-          {user?.role === "admin" && (
-            <Link href="/dashboard" className="btn-admin-panel" title="Ir al Panel Admin">
+          {(user?.role === "admin" || user?.role === "superadmin") && (
+            <Link href="/dashboard" className={`btn-admin-panel${user?.role === "superadmin" ? " btn-admin-panel--super" : ""}`} title="Ir al Panel Admin">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                 <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
                 <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
@@ -287,7 +287,7 @@ export default function Header({
           {user ? (
             <div className="user-menu" ref={menuRef}>
               <button
-                className={`user-trigger${user.role === "admin" ? " user-trigger--admin" : ""}`}
+                className={`user-trigger${(user.role === "admin" || user.role === "superadmin") ? " user-trigger--admin" : ""}`}
                 onClick={() => setMenuOpen(v => !v)}
                 aria-label="Menú de usuario"
               >
@@ -304,13 +304,16 @@ export default function Header({
                   <div className="ud-header">
                     <div className="ud-name">{user.name}</div>
                     <div className="ud-email">{user.email}</div>
-                    {user.role === "admin" && (
+                    {user.role === "superadmin" && (
+                      <span className="ud-role-badge ud-role-badge--super">👑 Superadmin</span>
+                    )}
+                  {user.role === "admin" && (
                       <span className="ud-role-badge">⚙️ Administrador</span>
                     )}
                   </div>
 
                   {/* Admin links */}
-                  {user.role === "admin" && (
+                  {(user.role === "admin" || user.role === "superadmin") && (
                     <>
                       <Link href="/dashboard" className="ud-item" onClick={() => setMenuOpen(false)}>
                         <span>📊</span> Panel Admin

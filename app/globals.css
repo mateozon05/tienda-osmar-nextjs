@@ -3183,3 +3183,68 @@ html, body {
   .cs-title { font-size: 19px; }
   .cs-bank-grid { font-size: 13px; gap: 6px 12px; }
 }
+
+/* ══════════════════════════════════════════
+   SUPERADMIN — ROLE BADGES & NAV
+══════════════════════════════════════════ */
+
+/* Badge en el sidebar del admin */
+.admin-role-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px; font-weight: 700;
+  background: rgba(255,110,0,.15);
+  color: var(--c1, #FF6E00);
+  border: 1px solid rgba(255,110,0,.3);
+}
+.admin-role-badge--super {
+  background: rgba(251,191,36,.15);
+  color: #D97706;
+  border-color: rgba(251,191,36,.4);
+}
+
+/* Divider de sección superadmin en nav */
+.admin-nav-divider {
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 16px 4px;
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: #D97706;
+  opacity: .85;
+}
+.admin-nav-divider::before {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,.08);
+}
+.admin-nav-divider--drawer { padding: 12px 16px 4px; }
+
+/* Superadmin nav items — golden tint when active */
+.admin-nav-item--super.active {
+  background: rgba(251,191,36,.18) !important;
+  color: #FDE68A !important;
+}
+.admin-drawer-link--super.active {
+  background: rgba(251,191,36,.18) !important;
+  color: #FDE68A !important;
+}
+
+/* Header dropdown — superadmin badge */
+.ud-role-badge--super {
+  background: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #FCD34D;
+}
+
+/* Header — superadmin panel button (gold variant) */
+.btn-admin-panel--super {
+  background: #1A1A2E;
+  border-color: rgba(251,191,36,.45);
+  color: #FDE68A;
+}
+.btn-admin-panel--super:hover {
+  background: #B45309;
+  border-color: #D97706;
+}
