@@ -17,7 +17,7 @@ export default function Hero({ onExplore, totalProducts }: HeroProps) {
       <div className="hero-inner">
         {!logoError ? (
           <img
-            src="/logo-osmar.svg"
+            src="/logo-osmar.png"
             alt="Distribuidora Osmar"
             className="hero-logo"
             onError={() => setLogoError(true)}
