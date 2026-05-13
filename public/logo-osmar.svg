@@ -1,68 +1,102 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
   <defs>
-    <linearGradient id="borderGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#FF3D00"/>
-      <stop offset="30%"  stop-color="#FF6B35"/>
-      <stop offset="55%"  stop-color="#E91E8C"/>
-      <stop offset="75%"  stop-color="#9C27B0"/>
-      <stop offset="100%" stop-color="#673AB7"/>
+    <!-- Gradiente del relleno del octágono (igual al logo real) -->
+    <radialGradient id="fillGrad" cx="60%" cy="35%" r="75%">
+      <stop offset="0%"   stop-color="#C840A0"/>
+      <stop offset="25%"  stop-color="#FF2060"/>
+      <stop offset="50%"  stop-color="#FF4500"/>
+      <stop offset="75%"  stop-color="#FF8C00"/>
+      <stop offset="100%" stop-color="#AADD00"/>
+    </radialGradient>
+    <!-- Gradiente del borde exterior del octágono -->
+    <linearGradient id="borderGrad" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%"   stop-color="#6600CC"/>
+      <stop offset="20%"  stop-color="#CC00AA"/>
+      <stop offset="45%"  stop-color="#FF2244"/>
+      <stop offset="70%"  stop-color="#FF6600"/>
+      <stop offset="100%" stop-color="#BBEE00"/>
     </linearGradient>
-    <linearGradient id="fillGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#FF6D00"/>
-      <stop offset="35%"  stop-color="#FF4081"/>
-      <stop offset="65%"  stop-color="#D500F9"/>
-      <stop offset="100%" stop-color="#651FFF"/>
-    </linearGradient>
+    <!-- Glow blanco del borde interior -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Sombra del octágono -->
+    <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="rgba(0,0,0,0.5)"/>
+    </filter>
   </defs>
 
-  <!-- Sombra sutil -->
+  <!-- Fondo negro cuadrado -->
+  <rect width="200" height="200" fill="#000000"/>
+
+  <!-- Octágono gradiente de borde -->
   <polygon
-    points="100,6 157,27 190,80 190,120 157,173 100,194 43,173 10,120 10,80 43,27"
-    fill="rgba(0,0,0,0.15)"
-    transform="translate(2,3)"
+    points="100,8 154,30 186,76 186,124 154,170 100,192 46,170 14,124 14,76 46,30"
+    fill="url(#borderGrad)"
+    filter="url(#shadow)"
   />
 
-  <!-- Borde exterior negro -->
+  <!-- Borde blanco interior (glow) -->
   <polygon
-    points="100,6 157,27 190,80 190,120 157,173 100,194 43,173 10,120 10,80 43,27"
-    fill="#111111"
+    points="100,13 150,34 181,78 181,122 150,166 100,187 50,166 19,122 19,78 50,34"
+    fill="none"
+    stroke="white"
+    stroke-width="4"
+    opacity="0.9"
+    filter="url(#glow)"
   />
 
-  <!-- Relleno gradiente interior -->
+  <!-- Relleno principal del octágono -->
   <polygon
-    points="100,14 152,33 182,82 182,118 152,167 100,186 48,167 18,118 18,82 48,33"
+    points="100,18 147,38 176,80 176,120 147,162 100,182 53,162 24,120 24,80 53,38"
     fill="url(#fillGrad)"
   />
 
-  <!-- Corona blanca -->
-  <g transform="translate(100,66)" fill="white">
-    <rect x="-17" y="9" width="34" height="7" rx="2"/>
-    <polygon points="-17,9 -17,-1 -10,4 0,-9 10,4 17,-1 17,9"/>
-    <circle cx="-17" cy="-1" r="3"/>
-    <circle cx="0"   cy="-9" r="3"/>
-    <circle cx="17"  cy="-1" r="3"/>
+  <!-- Highlight blanco sutil (brillo interior arriba) -->
+  <polygon
+    points="100,18 147,38 176,80 138,40 100,22 62,40 24,80 53,38"
+    fill="white"
+    opacity="0.08"
+  />
+
+  <!-- Corona (outline style, blanca) -->
+  <g transform="translate(100,62)" fill="white">
+    <!-- Base de la corona -->
+    <rect x="-20" y="10" width="40" height="8" rx="2.5"/>
+    <!-- Cuerpo de la corona con 5 puntas -->
+    <path d="M-20,10 L-20,-2 L-12,6 L0,-12 L12,6 L20,-2 L20,10 Z"/>
+    <!-- Bolitas de las puntas -->
+    <circle cx="-20" cy="-2" r="3.5"/>
+    <circle cx="0"   cy="-12" r="3.5"/>
+    <circle cx="20"  cy="-2" r="3.5"/>
+    <!-- Bolitas intermedias -->
+    <circle cx="-10" cy="2"  r="2.2"/>
+    <circle cx="10"  cy="2"  r="2.2"/>
   </g>
 
   <!-- Texto "Distribuidora" -->
   <text
-    x="100" y="116"
+    x="100" y="115"
     text-anchor="middle"
-    font-family="'Helvetica Neue', Arial, sans-serif"
-    font-size="15"
-    font-weight="400"
+    font-family="'Arial', 'Helvetica Neue', sans-serif"
+    font-size="17"
+    font-weight="500"
+    font-style="italic"
     fill="white"
-    letter-spacing="0.3"
+    letter-spacing="0.5"
   >Distribuidora</text>
 
-  <!-- Texto "OSMAR" bold -->
+  <!-- Texto "OSMAR" bold italic -->
   <text
-    x="100" y="146"
+    x="100" y="152"
     text-anchor="middle"
-    font-family="'Helvetica Neue', Arial, sans-serif"
-    font-size="34"
+    font-family="'Arial Black', 'Arial', sans-serif"
+    font-size="42"
     font-weight="900"
+    font-style="italic"
     fill="white"
-    letter-spacing="1.5"
+    letter-spacing="1"
   >OSMAR</text>
 
 </svg>
