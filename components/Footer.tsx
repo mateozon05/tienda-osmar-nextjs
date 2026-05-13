@@ -82,7 +82,7 @@ export default function Footer() {
           <div className="footer-brand">
             {!logoError ? (
               <img
-                src="/logo-osmar.png"
+                src="/logo-osmar.svg"
                 alt="Distribuidora Osmar"
                 className="footer-logo-img"
                 width={150}

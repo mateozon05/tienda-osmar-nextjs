@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="borderGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#FF3D00"/>
+      <stop offset="30%"  stop-color="#FF6B35"/>
+      <stop offset="55%"  stop-color="#E91E8C"/>
+      <stop offset="75%"  stop-color="#9C27B0"/>
+      <stop offset="100%" stop-color="#673AB7"/>
+    </linearGradient>
+    <linearGradient id="fillGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#FF6D00"/>
+      <stop offset="35%"  stop-color="#FF4081"/>
+      <stop offset="65%"  stop-color="#D500F9"/>
+      <stop offset="100%" stop-color="#651FFF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Sombra sutil -->
+  <polygon
+    points="100,6 157,27 190,80 190,120 157,173 100,194 43,173 10,120 10,80 43,27"
+    fill="rgba(0,0,0,0.15)"
+    transform="translate(2,3)"
+  />
+
+  <!-- Borde exterior negro -->
+  <polygon
+    points="100,6 157,27 190,80 190,120 157,173 100,194 43,173 10,120 10,80 43,27"
+    fill="#111111"
+  />
+
+  <!-- Relleno gradiente interior -->
+  <polygon
+    points="100,14 152,33 182,82 182,118 152,167 100,186 48,167 18,118 18,82 48,33"
+    fill="url(#fillGrad)"
+  />
+
+  <!-- Corona blanca -->
+  <g transform="translate(100,66)" fill="white">
+    <rect x="-17" y="9" width="34" height="7" rx="2"/>
+    <polygon points="-17,9 -17,-1 -10,4 0,-9 10,4 17,-1 17,9"/>
+    <circle cx="-17" cy="-1" r="3"/>
+    <circle cx="0"   cy="-9" r="3"/>
+    <circle cx="17"  cy="-1" r="3"/>
+  </g>
+
+  <!-- Texto "Distribuidora" -->
+  <text
+    x="100" y="116"
+    text-anchor="middle"
+    font-family="'Helvetica Neue', Arial, sans-serif"
+    font-size="15"
+    font-weight="400"
+    fill="white"
+    letter-spacing="0.3"
+  >Distribuidora</text>
+
+  <!-- Texto "OSMAR" bold -->
+  <text
+    x="100" y="146"
+    text-anchor="middle"
+    font-family="'Helvetica Neue', Arial, sans-serif"
+    font-size="34"
+    font-weight="900"
+    fill="white"
+    letter-spacing="1.5"
+  >OSMAR</text>
+
+</svg>
