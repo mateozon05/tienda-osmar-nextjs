@@ -13,7 +13,9 @@
     "sync:sipe": "npx tsx --env-file=.env scripts/sync-sipe-stock.ts",
     "import:sipe": "npx tsx --env-file=.env scripts/import-sipe-products.ts",
     "create:superadmin": "npx tsx --env-file=.env scripts/create-superadmin.ts",
-    "seed:settings": "npx tsx --env-file=.env scripts/seed-settings.ts"
+    "seed:settings": "npx tsx --env-file=.env scripts/seed-settings.ts",
+    "find:images": "npx tsx --env-file=.env scripts/find-product-images.ts",
+    "process:images": "npx tsx --env-file=.env scripts/process-product-images.ts"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
@@ -25,6 +27,7 @@
     "@types/nodemailer": "^8.0.0",
     "@types/pg": "^8.20.0",
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.10.0",
     "jose": "^6.2.2",
     "mercadopago": "^2.12.0",
     "next": "14.2.35",
@@ -34,6 +37,7 @@
     "react": "^18",
     "react-dom": "^18",
     "resend": "^6.12.2",
+    "sharp": "^0.34.5",
     "ws": "^8.20.0"
   },
   "devDependencies": {

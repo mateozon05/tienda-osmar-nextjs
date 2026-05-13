@@ -7,7 +7,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   const session = await getSession();
-  if (!session || session.role !== "admin") {
+  if (!session || (session.role !== "admin" && session.role !== "superadmin")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -20,6 +20,7 @@ export async function PATCH(
   if ("bulkPrice" in body) data.bulkPrice = body.bulkPrice ? parseFloat(body.bulkPrice) : null;
   if ("unitPrice" in body) data.unitPrice = body.unitPrice ? parseFloat(body.unitPrice) : null;
   if ("active"    in body) data.active    = Boolean(body.active);
+  if ("imageUrl"  in body) data.imageUrl  = body.imageUrl  || null;
 
   const product = await prisma.product.update({ where: { id }, data });
   return NextResponse.json(product);

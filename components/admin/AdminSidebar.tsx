@@ -6,11 +6,12 @@ import { usePathname, useRouter } from "next/navigation";
 
 // Items para todos los admins
 const NAV = [
-  { href: "/dashboard",  label: "Dashboard",  icon: "📊" },
-  { href: "/orders",     label: "Órdenes",    icon: "📦" },
-  { href: "/products",   label: "Productos",  icon: "🏷️" },
-  { href: "/users",      label: "Usuarios",   icon: "👤" },
-  { href: "/audit",      label: "Auditoría",  icon: "🛡️" },
+  { href: "/dashboard",        label: "Dashboard",  icon: "📊",  exact: false },
+  { href: "/orders",           label: "Órdenes",    icon: "📦",  exact: false },
+  { href: "/products",         label: "Productos",  icon: "🏷️", exact: true  },
+  { href: "/products/images",  label: "Imágenes",   icon: "🖼️", exact: false },
+  { href: "/users",            label: "Usuarios",   icon: "👤",  exact: false },
+  { href: "/audit",            label: "Auditoría",  icon: "🛡️", exact: false },
 ];
 
 // Items exclusivos de superadmin
@@ -45,7 +46,8 @@ export default function AdminSidebar({ role }: { role: string }) {
 
   const isSuperAdmin = role === "superadmin";
 
-  function isActive(href: string) {
+  function isActive(href: string, exact = false) {
+    if (exact) return pathname === href;
     return pathname === href || pathname.startsWith(href + "/");
   }
 
@@ -82,7 +84,7 @@ export default function AdminSidebar({ role }: { role: string }) {
             <Link
               key={item.href}
               href={item.href}
-              className={`admin-nav-item${isActive(item.href) ? " active" : ""}`}
+              className={`admin-nav-item${isActive(item.href, item.exact) ? " active" : ""}`}
             >
               <span className="admin-nav-icon">{item.icon}</span>
               {item.label}
@@ -178,7 +180,7 @@ export default function AdminSidebar({ role }: { role: string }) {
               key={item.href}
               href={item.href}
               onClick={closeDrawer}
-              className={`admin-drawer-link${isActive(item.href) ? " active" : ""}`}
+              className={`admin-drawer-link${isActive(item.href, item.exact) ? " active" : ""}`}
             >
               <span className="admin-drawer-link-icon">{item.icon}</span>
               {item.label}

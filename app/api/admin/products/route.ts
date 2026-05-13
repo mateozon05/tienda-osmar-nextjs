@@ -4,7 +4,7 @@ import { getSession } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   const session = await getSession();
-  if (!session || session.role !== "admin") {
+  if (!session || (session.role !== "admin" && session.role !== "superadmin")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -32,6 +32,7 @@ export async function GET(req: NextRequest) {
       take: limit,
       select: {
         id: true, code: true, name: true, price: true, active: true,
+        imageUrl: true,
         bulkUnit: true, bulkSize: true, bulkPrice: true, unitPrice: true,
         category: { select: { name: true, slug: true, emoji: true } },
       },
