@@ -9,7 +9,7 @@
  */
 
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../app/generated/prisma";
+import { PrismaClient } from "../app/generated/prisma/client";
 import { Pool } from "pg";
 import * as fs from "fs";
 import * as path from "path";
