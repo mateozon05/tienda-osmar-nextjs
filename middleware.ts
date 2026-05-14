@@ -19,9 +19,11 @@ const ADMIN_PATHS = [
   "/orders",
   "/users",
   "/clients",
+  "/salespersons",
   "/audit",
   "/products",
   "/api/admin/clients",
+  "/api/admin/salespersons",
 ];
 
 // Accessible ONLY to superadmin

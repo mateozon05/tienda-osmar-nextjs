@@ -33,9 +33,38 @@ export async function POST(req: NextRequest) {
   );
 
   const session = await getSession();
-  const customerName = session
-    ? (await prisma.user.findUnique({ where: { id: session.userId }, select: { name: true } }))?.name ?? session.email
-    : guestName ?? "Invitado";
+
+  // Look up user + salesperson info
+  let customerName:     string = guestName ?? "Invitado";
+  let salespersonId:    number | null = null;
+  let commissionRate:   number | null = null;
+  let commissionAmount: number | null = null;
+
+  if (session?.userId) {
+    const userWithSp = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: {
+        name: true,
+        salespersonId: true,
+        salesperson: { select: { defaultCommission: true } },
+        salespersonClients: {
+          take: 1,
+          select: { salespersonId: true, commission: true },
+        },
+      },
+    });
+
+    customerName = userWithSp?.name ?? session.email;
+
+    if (userWithSp?.salespersonId) {
+      salespersonId = userWithSp.salespersonId;
+      const link = userWithSp.salespersonClients.find(
+        (l) => l.salespersonId === salespersonId
+      );
+      commissionRate   = link?.commission ?? userWithSp.salesperson?.defaultCommission ?? 5;
+      commissionAmount = parseFloat((total * commissionRate / 100).toFixed(2));
+    }
+  }
 
   const order = await prisma.order.create({
     data: {
@@ -49,7 +78,10 @@ export async function POST(req: NextRequest) {
       paymentMethod:   paymentMethod  ?? "mercadopago",
       notes:           notes ?? null,
       total,
-      status: "pendiente",
+      status:          "pendiente",
+      salespersonId,
+      commissionRate,
+      commissionAmount,
       items: {
         create: items.map((i: CartItem) => ({
           productId: i.productId,
