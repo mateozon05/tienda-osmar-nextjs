@@ -21,19 +21,27 @@ model PriceList {
 
 model User {
   id          Int        @id @default(autoincrement())
-  email       String     @unique
+  email       String?    @unique              // Opcional para clientes importados de SIPE
+  clientCode  String?    @unique              // Número de cliente SIPE
   password    String
   name        String
   phone       String?
-  company     String?    // empresa del cliente
+  company     String?                         // Empresa / razón social
+  address     String?                         // Dirección
+  city        String?                         // Ciudad / localidad
+  taxId       String?                         // CUIT / DNI
   role        String     @default("customer")
-  status      String     @default("approved")   // 'pending' | 'approved' | 'rejected'
+  status      String     @default("approved") // 'pending' | 'approved' | 'rejected' | 'inactive'
   priceListId Int?
   priceList   PriceList? @relation(fields: [priceListId], references: [id])
   orders      Order[]
   cart        Cart?
   lastLogin   DateTime?
   createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @default(now()) @updatedAt
+
+  @@index([clientCode])
+  @@index([email])
 }
 
 model Category {

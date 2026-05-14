@@ -18,8 +18,10 @@ const ADMIN_PATHS = [
   "/dashboard",
   "/orders",
   "/users",
+  "/clients",
   "/audit",
   "/products",
+  "/api/admin/clients",
 ];
 
 // Accessible ONLY to superadmin
@@ -74,6 +76,11 @@ export async function middleware(request: NextRequest) {
     const isSuperAdminPath = SUPERADMIN_PATHS.some(
       (p) => pathname === p || pathname.startsWith(p + "/")
     );
+
+    // Rutas accesibles para cualquier usuario autenticado (clientes, admins)
+    const AUTH_PATHS = ["/profile", "/api/profile"];
+    const isAuthPath = AUTH_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
+    if (isAuthPath) return NextResponse.next();
 
     // Customers → back to shop
     if ((isAdminPath || isSuperAdminPath) && !isAdmin) {

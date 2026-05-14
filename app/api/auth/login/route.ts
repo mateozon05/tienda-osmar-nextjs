@@ -5,19 +5,30 @@ import { signToken, tokenCookieOptions } from "@/lib/auth";
 import { audit } from "@/lib/audit";
 
 export async function POST(req: NextRequest) {
-  const { email, password } = await req.json();
+  // Accept both old `email` field and new `identifier` (email OR clientCode)
+  const body = await req.json();
+  const identifier: string = (body.identifier ?? body.email ?? "").trim();
+  const password: string   = body.password ?? "";
 
-  if (!email || !password) {
+  if (!identifier || !password) {
     return NextResponse.json(
-      { error: "Email y contraseña son requeridos", code: "MISSING_FIELDS" },
+      { error: "Completá todos los campos", code: "MISSING_FIELDS" },
       { status: 400 }
     );
   }
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  // Find by email OR clientCode
+  const user = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { email: identifier },
+        { clientCode: identifier },
+      ],
+    },
+  });
   if (!user) {
     return NextResponse.json(
-      { error: "Credenciales incorrectas", code: "INVALID_CREDENTIALS" },
+      { error: "Usuario o contraseña incorrectos", code: "INVALID_CREDENTIALS" },
       { status: 401 }
     );
   }
@@ -25,7 +36,7 @@ export async function POST(req: NextRequest) {
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) {
     return NextResponse.json(
-      { error: "Credenciales incorrectas", code: "INVALID_CREDENTIALS" },
+      { error: "Usuario o contraseña incorrectos", code: "INVALID_CREDENTIALS" },
       { status: 401 }
     );
   }
@@ -57,12 +68,16 @@ export async function POST(req: NextRequest) {
   // Record last login (fire-and-forget, don't block response)
   prisma.user.update({ where: { id: user.id }, data: { lastLogin: new Date() } }).catch(() => {});
 
-  const token = await signToken({ userId: user.id, email: user.email, role: user.role });
+  const token = await signToken({
+    userId: user.id,
+    email:  user.email ?? user.clientCode ?? "",
+    role:   user.role,
+  });
   const res = NextResponse.json({
     success: true,
     user: {
-      id: user.id, email: user.email, name: user.name,
-      role: user.role, status: user.status, company: user.company,
+      id: user.id, email: user.email, clientCode: user.clientCode,
+      name: user.name, role: user.role, status: user.status, company: user.company,
     },
   });
   res.cookies.set(tokenCookieOptions(token));

@@ -5,22 +5,22 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function LoginPage() {
-  const [email,    setEmail]    = useState("");
-  const [password, setPassword] = useState("");
-  const [error,    setError]    = useState("");
-  const [loading,  setLoading]  = useState(false);
+  const [identifier, setIdentifier] = useState("");
+  const [password,   setPassword]   = useState("");
+  const [error,      setError]      = useState("");
+  const [loading,    setLoading]    = useState(false);
   const router = useRouter();
 
   async function handleLogin(e?: React.FormEvent) {
     e?.preventDefault();
-    if (!email || !password) { setError("Completá todos los campos"); return; }
+    if (!identifier || !password) { setError("Completá todos los campos"); return; }
     setLoading(true);
     setError("");
 
     const res  = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ identifier, password }),
     });
     const data = await res.json();
     setLoading(false);
@@ -28,7 +28,7 @@ export default function LoginPage() {
     if (!res.ok) { setError(data.error); return; }
 
     // Redirect based on role
-    if (data.user?.role === "admin") {
+    if (data.user?.role === "admin" || data.user?.role === "superadmin") {
       router.push("/dashboard");
     } else {
       router.push("/");
@@ -52,20 +52,22 @@ export default function LoginPage() {
         </div>
 
         <h2 className="auth-title">Bienvenido</h2>
-        <p className="auth-subtitle">Ingresá con tu usuario y contraseña</p>
+        <p className="auth-subtitle">Ingresá con tu email o número de cliente</p>
 
         {error && <div className="auth-error">{error}</div>}
 
         <form onSubmit={handleLogin} noValidate>
           <div className="auth-field">
-            <label className="auth-label">Email</label>
+            <label className="auth-label">Email o número de cliente</label>
             <input
-              type="email"
+              type="text"
               className="auth-input"
-              placeholder="tucorreo@ejemplo.com"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              autoComplete="email"
+              placeholder="Email o número de cliente (ej: 1254)"
+              value={identifier}
+              onChange={e => setIdentifier(e.target.value)}
+              autoComplete="username"
+              autoCapitalize="off"
+              autoCorrect="off"
             />
           </div>
 

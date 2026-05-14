@@ -15,7 +15,8 @@
     "create:superadmin": "npx tsx --env-file=.env scripts/create-superadmin.ts",
     "seed:settings": "npx tsx --env-file=.env scripts/seed-settings.ts",
     "find:images": "npx tsx --env-file=.env scripts/find-product-images.ts",
-    "process:images": "npx tsx --env-file=.env scripts/process-product-images.ts"
+    "process:images": "npx tsx --env-file=.env scripts/process-product-images.ts",
+    "import:clients": "npx tsx --env-file=.env scripts/import-clients-sipe.ts"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
