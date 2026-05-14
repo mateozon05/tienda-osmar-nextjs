@@ -66,48 +66,84 @@ async function importClients(excelPath: string) {
   const workbook = XLSX.readFile(excelPath);
   const sheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[sheetName];
-  const rows = XLSX.utils.sheet_to_json(sheet) as Record<string, unknown>[];
+
+  // Leer primera fila para detectar formato
+  const probe = XLSX.utils.sheet_to_json(sheet) as Record<string, unknown>[];
+  const firstKey = probe.length > 0 ? Object.keys(probe[0])[0] : "";
+
+  // ── Detectar formato SIPE (merged cells en encabezado) ────────────────────
+  // El Excel de SIPE exportado tiene:
+  //   Filas 1-4: info de SIPE (junk) — col A tiene "Cliente: "
+  //   Fila 5:    labels reales (ID, Codigo, Razón Social...) bajo merged cells
+  //   Fila 6+:   datos reales
+  // Se detecta si col A es "Cliente: " o "Clientes"
+  const isSipeFormat = firstKey === "Cliente: " || firstKey === "Clientes" || firstKey.startsWith("Cliente");
+
+  // Leer con el range correcto según el formato
+  const rows = isSipeFormat
+    ? (XLSX.utils.sheet_to_json(sheet, { range: 4 }) as Record<string, unknown>[])
+    : probe;
 
   console.log(`📋 Hoja: "${sheetName}" — ${rows.length} filas`);
 
-  // Mostrar columnas detectadas
-  if (rows.length > 0) {
+  let processedRows: Record<string, unknown>[] = [];
+
+  if (isSipeFormat) {
+    console.log("📌 Formato SIPE detectado (merged cells). Mapeando por posición…");
+    // Saltar fila 0 que contiene los labels (ID, Codigo, Razón Social...)
+    processedRows = rows.slice(1).map((r) => ({
+      clientCode: String((r as Record<string, unknown>)["__EMPTY"]         ?? "").trim(),
+      name:       String((r as Record<string, unknown>)["__EMPTY_1"]       ?? "").trim(),
+      taxId:      String((r as Record<string, unknown>)["__EMPTY_2"]       ?? "").trim() || null,
+      company:    String((r as Record<string, unknown>)["__EMPTY_3"]       ?? "").trim() || null,
+      phone:      String((r as Record<string, unknown>)["__EMPTY_6"]       ?? "").trim() || null,
+      address:    String((r as Record<string, unknown>)["__EMPTY_7"]       ?? "").trim() || null,
+      city:       String((r as Record<string, unknown>)["__EMPTY_8"]       ?? "").trim() || null,
+      email:      null,
+    }));
+  } else {
+    // Formato genérico: columnas con nombres estándar
     console.log(`📌 Columnas detectadas: ${Object.keys(rows[0]).join(", ")}\n`);
+    processedRows = rows.map((r) => {
+      const emailRaw = col(r, "Email", "email", "EMAIL", "Mail", "MAIL", "E-mail");
+      return {
+        clientCode: col(r, "Código", "Codigo", "codigo", "ID", "Nro"),
+        name:       col(r, "Nombre", "nombre", "Razón Social", "Razon Social"),
+        company:    colOrNull(r, "Empresa", "empresa", "Razón Social", "Razon Social"),
+        email:      emailRaw.toLowerCase() || null,
+        phone:      colOrNull(r, "Teléfono", "Telefono", "telefono", "Tel", "Celular"),
+        address:    colOrNull(r, "Dirección", "Direccion", "direccion", "Domicilio"),
+        city:       colOrNull(r, "Ciudad", "ciudad", "Localidad", "localidad"),
+        taxId:      colOrNull(r, "CUIT", "cuit", "DNI", "dni"),
+      };
+    });
   }
 
+  console.log(`📦 ${processedRows.length} clientes a procesar\n`);
   const results = { created: 0, updated: 0, skipped: 0, errors: [] as ImportError[] };
 
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
+  for (let i = 0; i < processedRows.length; i++) {
+    const row = processedRows[i] as Record<string, unknown>;
 
-    const clientCode = col(row,
-      "Código", "Codigo", "codigo", "CODIGO", "Cod", "COD",
-      "ID", "id", "Nro", "Numero", "Número", "NRO"
-    );
-    const name = col(row,
-      "Nombre", "nombre", "NOMBRE",
-      "Razón Social", "Razon Social", "razon social", "RAZON SOCIAL",
-      "RazonSocial"
-    );
+    const clientCode = String(row.clientCode ?? "").trim();
+    const name       = String(row.name ?? "").trim();
 
     if (!clientCode || !name) {
-      console.log(`  ⚠️  Fila ${i + 2}: sin código o nombre, saltada`);
       results.skipped++;
       continue;
     }
 
-    const emailRaw = col(row, "Email", "email", "EMAIL", "Mail", "MAIL", "E-mail");
-    const emailVal = emailRaw.toLowerCase() || null;
+    const emailVal = row.email ? String(row.email).toLowerCase() : null;
 
     const data = {
       clientCode,
       name,
-      company:  colOrNull(row, "Empresa", "empresa", "EMPRESA", "Razón Social", "Razon Social"),
-      email:    emailVal,
-      phone:    colOrNull(row, "Teléfono", "Telefono", "telefono", "TELEFONO", "Tel", "TEL", "Celular"),
-      address:  colOrNull(row, "Dirección", "Direccion", "direccion", "DIRECCION", "Domicilio"),
-      city:     colOrNull(row, "Ciudad", "ciudad", "CIUDAD", "Localidad", "localidad"),
-      taxId:    colOrNull(row, "CUIT", "cuit", "Cuit", "DNI", "dni"),
+      company: (row.company as string | null) ?? null,
+      email:   emailVal,
+      phone:   (row.phone as string | null)   ?? null,
+      address: (row.address as string | null) ?? null,
+      city:    (row.city as string | null)    ?? null,
+      taxId:   (row.taxId as string | null)   ?? null,
     };
 
     try {
