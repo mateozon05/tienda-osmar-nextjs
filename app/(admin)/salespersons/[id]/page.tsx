@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, use } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
 interface Salesperson {
@@ -234,8 +234,8 @@ function AssignClientModal({
 }
 
 // ── Main Page ────────────────────────────────────────────────────────────────
-export default function SalespersonDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function SalespersonDetailPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const router = useRouter();
 
   const [sp, setSp]           = useState<Salesperson | null>(null);
