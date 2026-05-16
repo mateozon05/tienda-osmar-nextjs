@@ -151,29 +151,79 @@ model CartItem {
 
 model Order {
   id               Int          @id @default(autoincrement())
+
+  // ── Identificación SIPE ──────────────────────────────────────
+  sipeId           Int?         @unique   // ID original en SIPE
+  sipeNumber       String?                // Número de orden SIPE ("00036218")
+
+  // ── Tipo de orden ────────────────────────────────────────────
+  // "order"    = Orden de venta (tienda web o SIPE sin factura)
+  // "invoiced" = Facturado en AFIP
+  orderType        String       @default("order")
+
+  // ── Cliente ──────────────────────────────────────────────────
   userId           Int?
   guestEmail       String?
   guestName        String?
   guestPhone       String?
+  clientCode       String?      // Código SIPE del cliente
+  clientName       String?      // Nombre del cliente (para órdenes SIPE)
+
+  // ── Estado ───────────────────────────────────────────────────
+  // Web: pendiente | procesando | enviado | entregado | cancelado
+  // SIPE: delivered | invoiced | cancelled
   status           String       @default("pendiente")
-  total            Float
-  shippingAddress  String
-  shippingCity     String
+
+  // ── Factura AFIP ─────────────────────────────────────────────
+  invoiceNumber    String?      // "FC A - 12 - 3344 - 15/05/2026"
+  invoiceDate      DateTime?
+  invoiceType      String?      // "A" | "B" | "C"
+
+  // ── Importes ─────────────────────────────────────────────────
+  total            Float        @default(0)  // Total sin IVA (o total general)
+  subtotal         Float        @default(0)  // Neto
+  tax              Float        @default(0)  // IVA
+  totalWithTax     Float        @default(0)  // Total con IVA
+
+  // ── Envío (web) ──────────────────────────────────────────────
+  shippingAddress  String?      // Nullable para órdenes SIPE
+  shippingCity     String?
   shippingMethod   String       @default("envio")
-  paymentMethod    String       @default("mercadopago") // mercadopago | transferencia | efectivo
+
+  // ── Pago ─────────────────────────────────────────────────────
+  paymentMethod    String       @default("mercadopago")
   mpPaymentId      String?
   mpStatus         String?
+
+  // ── Vendedor ─────────────────────────────────────────────────
+  salespersonId    Int?
+  salespersonName  String?      // Nombre original de SIPE
+  commissionRate   Float?
+  commissionAmount Float?
+
+  // ── Metadata SIPE ────────────────────────────────────────────
+  channel          String?      // Canal de venta ("Mayorista", "Local")
+  branch           String?      // Sucursal ("Depósito", "Cazón")
   notes            String?
-  salespersonId    Int?                                  // Vendedor que generó el pedido
-  commissionRate   Float?                               // % comisión aplicada
-  commissionAmount Float?                               // Monto comisión calculado
-  user             User?        @relation(fields: [userId], references: [id])
-  salesperson      Salesperson? @relation(fields: [salespersonId], references: [id])
-  items            OrderItem[]
+  importedFromSipe Boolean      @default(false)
+
+  // ── Timestamps ───────────────────────────────────────────────
+  orderDate        DateTime     @default(now())  // Fecha de la orden original
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 
+  user             User?        @relation(fields: [userId], references: [id])
+  salesperson      Salesperson? @relation(fields: [salespersonId], references: [id])
+  items            OrderItem[]
+
+  @@index([userId])
+  @@index([clientCode])
   @@index([salespersonId])
+  @@index([orderDate])
+  @@index([status])
+  @@index([orderType])
+  @@index([sipeId])
+  @@index([importedFromSipe])
   @@index([createdAt])
 }
 

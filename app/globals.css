@@ -4727,3 +4727,131 @@ html, body {
   .sp-comm-filters { flex-direction: column; }
   .sp-detail-header { flex-direction: column; }
 }
+
+/* ══════════════════════════════════════════
+   HISTORIAL ÓRDENES SIPE — oh-*
+══════════════════════════════════════════ */
+.oh-page { padding: 24px; max-width: 1300px; }
+
+.oh-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.oh-title    { font-size: 1.5rem; font-weight: 700; color: var(--text); }
+.oh-subtitle { font-size: .9rem; color: var(--text-muted); margin-top: 4px; }
+
+.oh-stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px; margin-bottom: 20px;
+}
+.oh-stat {
+  background: var(--surface-alt); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px; text-align: center;
+}
+.oh-stat--accent { background: #FEF3C7; border-color: #F59E0B; }
+.oh-stat-val { font-size: 1.3rem; font-weight: 700; color: var(--text); }
+.oh-stat-lbl { font-size: .78rem; color: var(--text-muted); margin-top: 3px; }
+
+.oh-filters { margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px; }
+.oh-search {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--text); font-size: .9rem;
+}
+.oh-search:focus { outline: none; border-color: var(--c1); }
+.oh-filter-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+.oh-filter-group { display: flex; flex-direction: column; gap: 4px; }
+.oh-filter-label { font-size: .78rem; font-weight: 600; color: var(--text-muted); }
+.oh-input-date {
+  padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--text); font-size: .88rem;
+}
+.oh-select {
+  padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--text); font-size: .88rem;
+}
+
+.oh-table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 16px; }
+.oh-table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+.oh-table th {
+  background: var(--surface-alt); text-align: left; padding: 9px 13px;
+  font-weight: 600; color: var(--text-muted); font-size: .78rem;
+  text-transform: uppercase; letter-spacing: .04em; white-space: nowrap;
+}
+.oh-table td { padding: 10px 13px; border-top: 1px solid var(--border); vertical-align: middle; }
+.oh-table tr:hover td { background: var(--surface-hover, #f9f9f9); }
+
+.oh-code { font-family: monospace; font-size: .82rem; background: #f1f1f1; padding: 2px 6px; border-radius: 4px; }
+.oh-td-date  { color: var(--text-muted); font-size: .82rem; white-space: nowrap; }
+.oh-td-muted { color: var(--text-muted); font-size: .82rem; }
+.oh-td-num   { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.oh-td-invoice { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oh-invoice  { font-size: .78rem; color: #065F46; }
+.oh-client-name { font-weight: 600; font-size: .85rem; }
+.oh-client-code { font-size: .75rem; color: var(--text-muted); }
+
+.oh-badge { display: inline-block; padding: 3px 9px; border-radius: 10px; font-size: .75rem; font-weight: 600; }
+.oh-badge--invoiced { background: #D1FAE5; color: #065F46; }
+.oh-badge--order    { background: #FEF3C7; color: #92400E; }
+
+.oh-pagination { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 12px 0; }
+.oh-btn-page {
+  padding: 7px 14px; background: var(--surface-alt); border: 1px solid var(--border);
+  border-radius: 8px; cursor: pointer; font-size: .85rem;
+}
+.oh-btn-page:disabled { opacity: .4; cursor: not-allowed; }
+.oh-page-info { font-size: .85rem; color: var(--text-muted); }
+.oh-loading { color: var(--text-muted); padding: 60px; text-align: center; }
+.oh-empty   { color: var(--text-muted); padding: 60px; text-align: center; background: var(--surface-alt); border-radius: 10px; }
+
+.oh-btn-export {
+  padding: 9px 18px; background: #D1FAE5; color: #065F46;
+  border: none; border-radius: 8px; font-size: .88rem; font-weight: 600; cursor: pointer;
+  white-space: nowrap;
+}
+.oh-btn-export:hover { background: #A7F3D0; }
+
+/* ══════════════════════════════════════════
+   DASHBOARD SIPE — dash-sipe-*
+══════════════════════════════════════════ */
+.dash-sipe-section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px; margin-bottom: 24px;
+}
+.dash-sipe-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
+}
+.dash-sipe-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+.dash-sipe-link  { font-size: .85rem; color: var(--c1); text-decoration: none; font-weight: 600; }
+.dash-sipe-link:hover { text-decoration: underline; }
+.dash-sipe-cards {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px; margin-bottom: 20px;
+}
+.dash-sipe-card {
+  background: var(--surface-alt); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px; text-align: center;
+}
+.dash-sipe-card--accent { background: #FEF3C7; border-color: #F59E0B; }
+.dash-sipe-card--up     { background: #D1FAE5; border-color: #10B981; }
+.dash-sipe-card--down   { background: #FEE2E2; border-color: #EF4444; }
+.dash-sipe-val { font-size: 1.35rem; font-weight: 700; color: var(--text); }
+.dash-sipe-lbl { font-size: .78rem; color: var(--text-muted); margin-top: 3px; }
+.dash-sipe-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+@media (max-width: 700px) { .dash-sipe-grid { grid-template-columns: 1fr; } }
+.dash-sipe-table-wrap { }
+.dash-sipe-subtitle { font-size: .9rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.dash-sipe-table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+.dash-sipe-table th {
+  text-align: left; padding: 7px 10px; background: var(--surface-alt);
+  font-size: .75rem; font-weight: 600; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.dash-sipe-table td { padding: 8px 10px; border-top: 1px solid var(--border); }
+
+@media (max-width: 640px) {
+  .oh-page { padding: 16px; }
+  .oh-filter-row { flex-direction: column; }
+}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type Order = {
   id: number;
@@ -30,6 +31,7 @@ const STATUS_NEXT: Record<string, string> = {
 };
 
 export default function OrdersPage() {
+  const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
@@ -73,7 +75,15 @@ export default function OrdersPage() {
     <div className="admin-page">
       <div className="admin-page-header">
         <h1 className="admin-page-title">Órdenes</h1>
-        <span className="admin-total-badge">{total} total</span>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <span className="admin-total-badge">{total} tienda web</span>
+          <button
+            onClick={() => router.push("/orders/history")}
+            style={{ padding: "6px 14px", background: "#EDE9FE", color: "#4C1D95", border: "none", borderRadius: 8, fontWeight: 600, fontSize: ".85rem", cursor: "pointer" }}
+          >
+            📋 Historial SIPE →
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
