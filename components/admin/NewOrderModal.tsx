@@ -4,80 +4,58 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
 /* ── Types ────────────────────────────────────────────────── */
-type Client = {
-  id: number;
-  clientCode: string | null;
-  name: string;
-  company: string | null;
-  email: string;
-};
+type Client    = { id: number; clientCode: string | null; name: string; company: string | null; email: string };
+type Product   = { id: number; code: string; name: string; price: number; imageUrl: string | null; bulkUnit: string | null; bulkSize: number | null; bulkPrice: number | null; unitPrice: number | null };
+type Salesperson = { id: number; name: string; defaultCommission: number };
+type CartItem  = { product: Product; quantity: number; unitPrice: number; mode: "unit" | "bulk" };
+type Step      = "client" | "products" | "confirm";
+type Props     = { onClose: () => void };
 
-type Product = {
-  id: number;
-  code: string;
-  name: string;
-  price: number;
-  imageUrl: string | null;
-  bulkUnit: string | null;
-  bulkSize: number | null;
-  bulkPrice: number | null;
-  unitPrice: number | null;
-};
-
-type Salesperson = {
-  id: number;
-  name: string;
-  defaultCommission: number;
-};
-
-type CartItem = {
-  product: Product;
-  quantity: number;
-  unitPrice: number;
-  mode: "unit" | "bulk";
-};
-
-/* ── Props ────────────────────────────────────────────────── */
-type Props = {
-  onClose: () => void;
-};
+/* ── Design tokens ────────────────────────────────────────── */
+const C   = "#FF751F";   // orange-500
+const CD  = "#E55100";   // orange-600 (hover)
+const G9  = "#1A1A2E";   // gray-900  (text)
+const G7  = "#374151";   // gray-700
+const G5  = "#6B7280";   // gray-500
+const G4  = "#9CA3AF";   // gray-400
+const G2  = "#E5E7EB";   // gray-200  (border)
+const G1  = "#F3F4F6";   // gray-100
+const G05 = "#F9FAFB";   // gray-50
 
 /* ── Modal ────────────────────────────────────────────────── */
 export default function NewOrderModal({ onClose }: Props) {
   const router = useRouter();
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<Step>("client");
 
-  /* Step 1 state */
-  const [clientQ, setClientQ] = useState("");
+  /* Step 1 */
+  const [clientQ, setClientQ]           = useState("");
   const [clientResults, setClientResults] = useState<Client[]>([]);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  const [salespersons, setSalespersons] = useState<Salesperson[]>([]);
-  const [selectedSpId, setSelectedSpId] = useState<string>("");
+  const [salespersons, setSalespersons]   = useState<Salesperson[]>([]);
+  const [selectedSpId, setSelectedSpId]   = useState("");
   const [loadingClients, setLoadingClients] = useState(false);
-  const clientDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clientTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /* Step 2 state */
-  const [productQ, setProductQ] = useState("");
+  /* Step 2 */
+  const [productQ, setProductQ]         = useState("");
   const [productResults, setProductResults] = useState<Product[]>([]);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart]                 = useState<CartItem[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
-  const productDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const productTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /* Step 3 state */
+  /* Step 3 */
   const [paymentMethod, setPaymentMethod] = useState("efectivo");
   const [shippingMethod, setShippingMethod] = useState("retiro");
-  const [notes, setNotes] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState("");
+  const [notes, setNotes]               = useState("");
+  const [submitting, setSubmitting]     = useState(false);
+  const [submitError, setSubmitError]   = useState("");
 
-  /* Load salespersons on mount */
   useEffect(() => {
     fetch("/api/admin/salespersons?status=active&limit=100")
       .then((r) => r.json())
       .then((d) => setSalespersons(d.salespersons ?? []));
   }, []);
 
-  /* Client search */
   const searchClients = useCallback((q: string) => {
     if (!q.trim()) { setClientResults([]); return; }
     setLoadingClients(true);
@@ -85,14 +63,12 @@ export default function NewOrderModal({ onClose }: Props) {
       .then((r) => r.json())
       .then((d) => { setClientResults(d.clients ?? []); setLoadingClients(false); });
   }, []);
-
   useEffect(() => {
-    if (clientDebounce.current) clearTimeout(clientDebounce.current);
-    clientDebounce.current = setTimeout(() => searchClients(clientQ), 300);
-    return () => { if (clientDebounce.current) clearTimeout(clientDebounce.current); };
+    if (clientTimer.current) clearTimeout(clientTimer.current);
+    clientTimer.current = setTimeout(() => searchClients(clientQ), 300);
+    return () => { if (clientTimer.current) clearTimeout(clientTimer.current); };
   }, [clientQ, searchClients]);
 
-  /* Product search */
   const searchProducts = useCallback((q: string) => {
     if (!q.trim()) { setProductResults([]); return; }
     setLoadingProducts(true);
@@ -100,233 +76,277 @@ export default function NewOrderModal({ onClose }: Props) {
       .then((r) => r.json())
       .then((d) => { setProductResults(d.products ?? []); setLoadingProducts(false); });
   }, []);
-
   useEffect(() => {
-    if (productDebounce.current) clearTimeout(productDebounce.current);
-    productDebounce.current = setTimeout(() => searchProducts(productQ), 300);
-    return () => { if (productDebounce.current) clearTimeout(productDebounce.current); };
+    if (productTimer.current) clearTimeout(productTimer.current);
+    productTimer.current = setTimeout(() => searchProducts(productQ), 300);
+    return () => { if (productTimer.current) clearTimeout(productTimer.current); };
   }, [productQ, searchProducts]);
 
-  /* Cart operations */
   function addToCart(product: Product, mode: "unit" | "bulk") {
-    const unitPrice = mode === "bulk" && product.bulkPrice != null
-      ? product.bulkPrice
-      : product.unitPrice ?? product.price;
+    const unitPrice = mode === "bulk" && product.bulkPrice != null ? product.bulkPrice : product.unitPrice ?? product.price;
     setCart((prev) => {
-      const existing = prev.find((i) => i.product.id === product.id && i.mode === mode);
-      if (existing) {
-        return prev.map((i) =>
-          i.product.id === product.id && i.mode === mode
-            ? { ...i, quantity: i.quantity + 1 }
-            : i
-        );
-      }
+      const ex = prev.find((i) => i.product.id === product.id && i.mode === mode);
+      if (ex) return prev.map((i) => i.product.id === product.id && i.mode === mode ? { ...i, quantity: i.quantity + 1 } : i);
       return [...prev, { product, quantity: 1, unitPrice, mode }];
     });
-    setProductQ("");
-    setProductResults([]);
+    setProductQ(""); setProductResults([]);
   }
-
   function updateQty(idx: number, delta: number) {
-    setCart((prev) => {
-      const updated = [...prev];
-      updated[idx] = { ...updated[idx], quantity: updated[idx].quantity + delta };
-      return updated.filter((i) => i.quantity > 0);
-    });
+    setCart((prev) => prev.map((i, n) => n === idx ? { ...i, quantity: i.quantity + delta } : i).filter((i) => i.quantity > 0));
   }
-
-  function removeFromCart(idx: number) {
-    setCart((prev) => prev.filter((_, i) => i !== idx));
-  }
+  function removeFromCart(idx: number) { setCart((prev) => prev.filter((_, i) => i !== idx)); }
 
   const cartTotal = cart.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
+  const stepIdx   = ["client", "products", "confirm"].indexOf(step);
 
-  /* Submit */
   async function submit() {
-    if (cart.length === 0) { setSubmitError("Agregá al menos un producto."); return; }
-    setSubmitting(true);
-    setSubmitError("");
+    if (!cart.length) { setSubmitError("Agregá al menos un producto."); return; }
+    setSubmitting(true); setSubmitError("");
     try {
       const res = await fetch("/api/admin/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          clientId: selectedClient?.id ?? null,
-          clientCode: selectedClient?.clientCode ?? null,
-          clientName: selectedClient?.name ?? null,
-          salespersonId: selectedSpId ? parseInt(selectedSpId) : null,
-          paymentMethod,
-          shippingMethod,
-          notes,
-          items: cart.map((i) => ({
-            productId: i.product.id,
-            quantity: i.quantity,
-            unitPrice: i.unitPrice,
-          })),
+          clientId: selectedClient?.id ?? null, clientCode: selectedClient?.clientCode ?? null,
+          clientName: selectedClient?.name ?? null, salespersonId: selectedSpId ? parseInt(selectedSpId) : null,
+          paymentMethod, shippingMethod, notes,
+          items: cart.map((i) => ({ productId: i.product.id, quantity: i.quantity, unitPrice: i.unitPrice })),
         }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setSubmitError(data.error ?? "Error al crear la orden");
-        setSubmitting(false);
-        return;
-      }
+      if (!res.ok) { setSubmitError(data.error ?? "Error al crear la orden"); setSubmitting(false); return; }
       onClose();
       router.push(`/orders/${data.order.id}`);
       router.refresh();
-    } catch {
-      setSubmitError("Error de conexión. Intentá nuevamente.");
-      setSubmitting(false);
-    }
+    } catch { setSubmitError("Error de conexión. Intentá nuevamente."); setSubmitting(false); }
   }
 
-  /* Step 1 valid? */
-  const step1Valid = true; // client optional for walk-in sales
+  /* ── shared input style ─────────────────────────────────── */
+  const inputStyle: React.CSSProperties = {
+    width: "100%", padding: "10px 14px", border: `2px solid ${G2}`, borderRadius: 10,
+    background: "#fff", color: G9, fontSize: 14, outline: "none", transition: "border-color .15s",
+    boxSizing: "border-box",
+  };
+  const labelStyle: React.CSSProperties = {
+    display: "block", fontSize: 11, fontWeight: 700, color: C,
+    textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6,
+  };
 
   return (
-    <div className="nord-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="nord-modal">
-        {/* ── Header ── */}
-        <div className="nord-header">
+    <div
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      style={{
+        position: "fixed", inset: 0, zIndex: 9999, display: "flex",
+        alignItems: "center", justifyContent: "center", padding: 20,
+        background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)",
+      }}
+    >
+      <div style={{
+        background: "#fff", borderRadius: 16, width: "100%", maxWidth: 680,
+        maxHeight: "90vh", display: "flex", flexDirection: "column",
+        boxShadow: "0 25px 60px rgba(0,0,0,0.3)",
+      }}>
+
+        {/* ── HEADER ── */}
+        <div style={{
+          display: "flex", alignItems: "flex-start", justifyContent: "space-between",
+          padding: "20px 24px", borderBottom: `2px solid ${C}`,
+          borderRadius: "16px 16px 0 0", background: "#fff", flexShrink: 0,
+        }}>
           <div>
-            <h2 className="nord-title">Nueva Orden de Venta</h2>
-            <div className="nord-steps">
-              {["Cliente", "Productos", "Confirmar"].map((label, i) => {
-                const n = (i + 1) as 1 | 2 | 3;
-                return (
-                  <div key={n} className={`nord-step${step === n ? " nord-step--active" : step > n ? " nord-step--done" : ""}`}>
-                    <div className="nord-step-dot">{step > n ? "✓" : n}</div>
-                    <span className="nord-step-label">{label}</span>
-                    {i < 2 && <div className="nord-step-line" />}
-                  </div>
-                );
-              })}
-            </div>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: G9, margin: 0 }}>Nueva Orden de Venta</h2>
+            <p style={{ fontSize: 13, color: G4, marginTop: 3, marginBottom: 0 }}>Completá los datos para crear una orden manual</p>
           </div>
-          <button className="nord-close" onClick={onClose} title="Cerrar">✕</button>
+          <button
+            onClick={onClose}
+            style={{
+              width: 32, height: 32, borderRadius: "50%", border: "none",
+              background: "none", cursor: "pointer", color: G4, fontSize: 14,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              transition: "background .15s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = G1)}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+          >
+            ✕
+          </button>
         </div>
 
-        {/* ── Body ── */}
-        <div className="nord-body">
+        {/* ── STEPS ── */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 8, padding: "10px 24px",
+          background: G05, borderBottom: `1px solid ${G2}`, flexShrink: 0,
+        }}>
+          {[{ id: "client", num: 1, label: "Cliente" }, { id: "products", num: 2, label: "Productos" }, { id: "confirm", num: 3, label: "Confirmar" }].map((s, i) => {
+            const isActive = step === s.id;
+            const isDone = stepIdx > i;
+            return (
+              <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  padding: "6px 14px", borderRadius: 20, fontSize: 13, fontWeight: 600,
+                  background: isActive ? C : isDone ? "#FFF0E6" : "transparent",
+                  color: isActive ? "#fff" : isDone ? C : G4,
+                  transition: "all .2s",
+                }}>
+                  <span style={{
+                    width: 20, height: 20, borderRadius: "50%", display: "flex",
+                    alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700,
+                    background: isActive ? "#fff" : isDone ? C : G2,
+                    color: isActive ? C : isDone ? "#fff" : G5,
+                  }}>
+                    {isDone ? "✓" : s.num}
+                  </span>
+                  {s.label}
+                </div>
+                {i < 2 && <span style={{ color: G2, fontSize: 14 }}>→</span>}
+              </div>
+            );
+          })}
+        </div>
 
-          {/* ────── STEP 1 ────── */}
-          {step === 1 && (
-            <div className="nord-section-wrap">
-              <div className="nord-section">
-                <h3 className="nord-section-title">Datos del cliente</h3>
+        {/* ── BODY ── */}
+        <div style={{ flex: 1, overflowY: "auto", background: "#fff" }}>
 
-                {/* Client search */}
-                <div className="nord-field">
-                  <label className="nord-label">Cliente <span className="nord-optional">(opcional — dejar vacío para venta sin cuenta)</span></label>
-                  {selectedClient ? (
-                    <div className="nord-selected-client">
-                      <div className="nord-selected-info">
-                        <span className="nord-selected-name">{selectedClient.name}</span>
-                        {selectedClient.clientCode && (
-                          <span className="nord-selected-code">[{selectedClient.clientCode}]</span>
-                        )}
-                        <span className="nord-selected-email">{selectedClient.email}</span>
-                      </div>
-                      <button
-                        className="nord-btn-remove"
-                        onClick={() => { setSelectedClient(null); setClientQ(""); }}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="nord-autocomplete">
-                      <input
-                        className="nord-input"
-                        placeholder="Buscar por nombre, código o email..."
-                        value={clientQ}
-                        onChange={(e) => setClientQ(e.target.value)}
-                        autoFocus
-                      />
-                      {(clientResults.length > 0 || loadingClients) && (
-                        <div className="nord-dropdown">
-                          {loadingClients && <div className="nord-dropdown-loading">Buscando...</div>}
-                          {clientResults.map((c) => (
-                            <button
-                              key={c.id}
-                              className="nord-dropdown-item"
-                              onClick={() => { setSelectedClient(c); setClientQ(""); setClientResults([]); }}
-                            >
-                              <span className="nord-dropdown-name">{c.name}</span>
-                              {c.clientCode && <span className="nord-dropdown-code">[{c.clientCode}]</span>}
-                              <span className="nord-dropdown-email">{c.email}</span>
-                            </button>
-                          ))}
-                        </div>
+          {/* ─── STEP 1: Cliente ─── */}
+          {step === "client" && (
+            <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: 20 }}>
+
+              {/* Client search */}
+              <div>
+                <label style={labelStyle}>
+                  Cliente{" "}
+                  <span style={{ color: G4, textTransform: "none", fontWeight: 400, letterSpacing: 0 }}>
+                    (opcional — dejar vacío para venta sin cuenta)
+                  </span>
+                </label>
+                {selectedClient ? (
+                  <div style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "10px 14px", background: "#F0FDF4", border: "2px solid #BBF7D0",
+                    borderRadius: 10, gap: 10,
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <span style={{ fontWeight: 700, color: G9, fontSize: 14 }}>{selectedClient.name}</span>
+                      {selectedClient.clientCode && (
+                        <span style={{ fontSize: 12, background: G1, color: G5, borderRadius: 4, padding: "1px 6px" }}>[{selectedClient.clientCode}]</span>
                       )}
+                      <span style={{ fontSize: 13, color: G4 }}>{selectedClient.email}</span>
                     </div>
-                  )}
-                </div>
+                    <button
+                      onClick={() => { setSelectedClient(null); setClientQ(""); }}
+                      style={{ background: "none", border: "none", cursor: "pointer", color: G4, fontSize: 14, fontWeight: 700, padding: 4 }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = "#EF4444")}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = G4)}
+                    >✕</button>
+                  </div>
+                ) : (
+                  <div style={{ position: "relative" }}>
+                    <input
+                      autoFocus
+                      style={inputStyle}
+                      placeholder="Buscar por nombre, código o email..."
+                      value={clientQ}
+                      onChange={(e) => setClientQ(e.target.value)}
+                      onFocus={(e) => { e.target.style.borderColor = C; e.target.style.boxShadow = `0 0 0 3px rgba(255,117,31,0.15)`; }}
+                      onBlur={(e)  => { e.target.style.borderColor = G2; e.target.style.boxShadow = "none"; }}
+                    />
+                    {(clientResults.length > 0 || loadingClients) && (
+                      <div style={{
+                        position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 20,
+                        background: "#fff", border: `1px solid ${G2}`, borderRadius: 10,
+                        boxShadow: "0 8px 24px rgba(0,0,0,0.12)", maxHeight: 224, overflowY: "auto",
+                      }}>
+                        {loadingClients && <div style={{ padding: "10px 14px", fontSize: 13, color: G4 }}>Buscando...</div>}
+                        {clientResults.map((c) => (
+                          <button key={c.id} onClick={() => { setSelectedClient(c); setClientQ(""); setClientResults([]); }}
+                            style={{
+                              width: "100%", textAlign: "left", padding: "10px 14px",
+                              background: "none", border: "none", borderBottom: `1px solid ${G2}`,
+                              cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 13,
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "#FFF7F0")}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+                          >
+                            <span style={{ fontWeight: 600, color: G9, flex: 1 }}>{c.name}</span>
+                            {c.clientCode && <span style={{ fontSize: 11, background: G1, color: G5, borderRadius: 4, padding: "1px 5px" }}>[{c.clientCode}]</span>}
+                            <span style={{ fontSize: 12, color: G4 }}>{c.email}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
-                {/* Salesperson */}
-                <div className="nord-field">
-                  <label className="nord-label">Vendedor <span className="nord-optional">(opcional)</span></label>
-                  <select
-                    className="nord-select"
-                    value={selectedSpId}
-                    onChange={(e) => setSelectedSpId(e.target.value)}
-                  >
-                    <option value="">Sin vendedor asignado</option>
-                    {salespersons.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name} ({s.defaultCommission}%)
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* Salesperson */}
+              <div>
+                <label style={labelStyle}>
+                  Vendedor{" "}
+                  <span style={{ color: G4, textTransform: "none", fontWeight: 400, letterSpacing: 0 }}>(opcional)</span>
+                </label>
+                <select
+                  style={{ ...inputStyle, cursor: "pointer" }}
+                  value={selectedSpId}
+                  onChange={(e) => setSelectedSpId(e.target.value)}
+                  onFocus={(e) => { e.target.style.borderColor = C; (e.target as HTMLElement).style.boxShadow = `0 0 0 3px rgba(255,117,31,0.15)`; }}
+                  onBlur={(e)  => { e.target.style.borderColor = G2; (e.target as HTMLElement).style.boxShadow = "none"; }}
+                >
+                  <option value="">Sin vendedor asignado</option>
+                  {salespersons.map((s) => <option key={s.id} value={s.id}>{s.name} ({s.defaultCommission}%)</option>)}
+                </select>
               </div>
             </div>
           )}
 
-          {/* ────── STEP 2 ────── */}
-          {step === 2 && (
-            <div className="nord-section-wrap">
-              {/* Product search */}
-              <div className="nord-section">
-                <h3 className="nord-section-title">Agregar productos</h3>
-                <div className="nord-autocomplete">
+          {/* ─── STEP 2: Productos ─── */}
+          {step === "products" && (
+            <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: 20 }}>
+
+              {/* Search */}
+              <div>
+                <label style={labelStyle}>Agregar producto</label>
+                <div style={{ position: "relative" }}>
                   <input
-                    className="nord-input"
-                    placeholder="Buscar producto por nombre o código..."
+                    autoFocus
+                    style={inputStyle}
+                    placeholder="Buscar por nombre o código..."
                     value={productQ}
                     onChange={(e) => setProductQ(e.target.value)}
-                    autoFocus
+                    onFocus={(e) => { e.target.style.borderColor = C; e.target.style.boxShadow = `0 0 0 3px rgba(255,117,31,0.15)`; }}
+                    onBlur={(e)  => { e.target.style.borderColor = G2; e.target.style.boxShadow = "none"; }}
                   />
                   {(productResults.length > 0 || loadingProducts) && (
-                    <div className="nord-dropdown nord-dropdown--products">
-                      {loadingProducts && <div className="nord-dropdown-loading">Buscando...</div>}
+                    <div style={{
+                      position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 20,
+                      background: "#fff", border: `1px solid ${G2}`, borderRadius: 10,
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.12)", maxHeight: 300, overflowY: "auto",
+                    }}>
+                      {loadingProducts && <div style={{ padding: "10px 14px", fontSize: 13, color: G4 }}>Buscando...</div>}
                       {productResults.map((p) => (
-                        <div key={p.id} className="nord-product-result">
-                          {p.imageUrl && (
-                            <img src={p.imageUrl} alt={p.name} className="nord-product-img" />
-                          )}
-                          <div className="nord-product-info">
-                            <span className="nord-product-name">{p.name}</span>
-                            <span className="nord-product-code">{p.code}</span>
+                        <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: `1px solid ${G2}` }}>
+                          {p.imageUrl && <img src={p.imageUrl} alt={p.name} style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 8, border: `1px solid ${G2}`, flexShrink: 0 }} />}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 600, fontSize: 13, color: G9, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
+                            <div style={{ fontSize: 11, color: G4 }}>{p.code}</div>
                           </div>
-                          <div className="nord-product-actions">
+                          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                             <button
-                              className="nord-btn-add"
                               onClick={() => addToCart(p, "unit")}
-                              title="Agregar por unidad"
+                              style={{ padding: "6px 10px", background: C, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 700, textAlign: "center", lineHeight: 1.4 }}
+                              onMouseEnter={(e) => (e.currentTarget.style.background = CD)}
+                              onMouseLeave={(e) => (e.currentTarget.style.background = C)}
                             >
-                              + Unidad<br />
-                              <span className="nord-btn-add-price">${(p.unitPrice ?? p.price).toLocaleString("es-AR")}</span>
+                              + Unidad<br /><span style={{ fontWeight: 400, fontSize: 11 }}>${(p.unitPrice ?? p.price).toLocaleString("es-AR")}</span>
                             </button>
                             {p.bulkPrice != null && p.bulkSize != null && (
                               <button
-                                className="nord-btn-add nord-btn-add--bulk"
                                 onClick={() => addToCart(p, "bulk")}
-                                title={`Agregar x${p.bulkSize} (${p.bulkUnit ?? "pack"})`}
+                                style={{ padding: "6px 10px", background: "#7C3AED", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 700, textAlign: "center", lineHeight: 1.4 }}
+                                onMouseEnter={(e) => (e.currentTarget.style.background = "#6D28D9")}
+                                onMouseLeave={(e) => (e.currentTarget.style.background = "#7C3AED")}
                               >
-                                + x{p.bulkSize}<br />
-                                <span className="nord-btn-add-price">${p.bulkPrice.toLocaleString("es-AR")}</span>
+                                ×{p.bulkSize}<br /><span style={{ fontWeight: 400, fontSize: 11 }}>${p.bulkPrice.toLocaleString("es-AR")}</span>
                               </button>
                             )}
                           </div>
@@ -338,43 +358,55 @@ export default function NewOrderModal({ onClose }: Props) {
               </div>
 
               {/* Cart */}
-              <div className="nord-section">
-                <div className="nord-cart-header">
-                  <h3 className="nord-section-title" style={{ margin: 0 }}>Carrito</h3>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                  <label style={{ ...labelStyle, marginBottom: 0 }}>Carrito</label>
                   {cartCount > 0 && (
-                    <span className="nord-cart-badge">{cartCount} {cartCount === 1 ? "item" : "items"}</span>
+                    <span style={{ background: C, color: "#fff", fontSize: 12, fontWeight: 700, borderRadius: 20, padding: "2px 10px" }}>
+                      {cartCount} {cartCount === 1 ? "item" : "items"}
+                    </span>
                   )}
                 </div>
                 {cart.length === 0 ? (
-                  <div className="nord-cart-empty">
-                    Buscá productos arriba para agregarlos al pedido.
+                  <div style={{ textAlign: "center", padding: "28px 20px", color: G4, fontSize: 13, background: G05, borderRadius: 10, border: `2px dashed ${G2}` }}>
+                    Buscá productos arriba para agregarlos al pedido
                   </div>
                 ) : (
-                  <div className="nord-cart-list">
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {cart.map((item, idx) => (
-                      <div key={idx} className="nord-cart-item">
-                        <div className="nord-cart-item-info">
-                          <span className="nord-cart-item-name">{item.product.name}</span>
-                          <span className="nord-cart-item-detail">
+                      <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: G05, borderRadius: 10, border: `1px solid ${G2}` }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 600, fontSize: 13, color: G9, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.product.name}</div>
+                          <div style={{ fontSize: 11, color: G4 }}>
                             {item.mode === "bulk"
-                              ? `x${item.product.bulkSize} ${item.product.bulkUnit ?? "pack"} · $${item.unitPrice.toLocaleString("es-AR")}/pack`
+                              ? `×${item.product.bulkSize} ${item.product.bulkUnit ?? "pack"} · $${item.unitPrice.toLocaleString("es-AR")}/pack`
                               : `Unidad · $${item.unitPrice.toLocaleString("es-AR")}`}
-                          </span>
+                          </div>
                         </div>
-                        <div className="nord-cart-item-qty">
-                          <button className="nord-qty-btn" onClick={() => updateQty(idx, -1)}>−</button>
-                          <span className="nord-qty-val">{item.quantity}</span>
-                          <button className="nord-qty-btn" onClick={() => updateQty(idx, +1)}>+</button>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          {([-1, 0, 1] as const).map((d, i) =>
+                            d === 0
+                              ? <span key="val" style={{ minWidth: 24, textAlign: "center", fontWeight: 700, fontSize: 14 }}>{item.quantity}</span>
+                              : <button key={d} onClick={() => updateQty(idx, d)}
+                                  style={{ width: 28, height: 28, borderRadius: "50%", border: `2px solid ${G2}`, background: "#fff", cursor: "pointer", fontWeight: 700, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", color: G7, transition: "border-color .12s, color .12s" }}
+                                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = C; e.currentTarget.style.color = C; }}
+                                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = G2; e.currentTarget.style.color = G7; }}
+                                >{d === -1 ? "−" : "+"}</button>
+                          )}
                         </div>
-                        <span className="nord-cart-item-sub">
+                        <span style={{ fontWeight: 700, color: C, fontSize: 14, minWidth: 70, textAlign: "right" }}>
                           ${(item.unitPrice * item.quantity).toLocaleString("es-AR")}
                         </span>
-                        <button className="nord-btn-remove" onClick={() => removeFromCart(idx)}>✕</button>
+                        <button onClick={() => removeFromCart(idx)}
+                          style={{ background: "none", border: "none", cursor: "pointer", color: G2, fontSize: 13, padding: 4, transition: "color .12s" }}
+                          onMouseEnter={(e) => (e.currentTarget.style.color = "#EF4444")}
+                          onMouseLeave={(e) => (e.currentTarget.style.color = G2)}
+                        >✕</button>
                       </div>
                     ))}
-                    <div className="nord-cart-total">
-                      <span>Total</span>
-                      <span className="nord-cart-total-val">${cartTotal.toLocaleString("es-AR")}</span>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", background: "#FFF7F0", border: `2px solid #FED7AA`, borderRadius: 10, marginTop: 2 }}>
+                      <span style={{ fontWeight: 700, color: G9 }}>Total</span>
+                      <span style={{ fontWeight: 800, fontSize: 18, color: C }}>${cartTotal.toLocaleString("es-AR")}</span>
                     </div>
                   </div>
                 )}
@@ -382,122 +414,145 @@ export default function NewOrderModal({ onClose }: Props) {
             </div>
           )}
 
-          {/* ────── STEP 3 ────── */}
-          {step === 3 && (
-            <div className="nord-section-wrap">
+          {/* ─── STEP 3: Confirmar ─── */}
+          {step === "confirm" && (
+            <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: 20 }}>
+
               {/* Summary */}
-              <div className="nord-section">
-                <h3 className="nord-section-title">Resumen del pedido</h3>
-                <div className="nord-summary-client">
-                  <span className="nord-summary-label">Cliente:</span>
-                  <span>{selectedClient?.name ?? "Sin cuenta (venta presencial)"}</span>
-                  {selectedClient?.clientCode && (
-                    <span className="nord-selected-code">[{selectedClient.clientCode}]</span>
-                  )}
-                </div>
-                {selectedSpId && (
-                  <div className="nord-summary-client">
-                    <span className="nord-summary-label">Vendedor:</span>
-                    <span>{salespersons.find((s) => s.id === parseInt(selectedSpId))?.name}</span>
+              <div>
+                <label style={labelStyle}>Resumen del pedido</label>
+                <div style={{ border: `1px solid ${G2}`, borderRadius: 10, overflow: "hidden" }}>
+                  <div style={{ padding: "10px 14px", borderBottom: `1px solid ${G2}`, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 13, color: G5, fontWeight: 600 }}>Cliente:</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: G9 }}>{selectedClient?.name ?? "Sin cuenta (venta presencial)"}</span>
+                    {selectedClient?.clientCode && <span style={{ fontSize: 11, background: G1, color: G5, borderRadius: 4, padding: "1px 6px" }}>[{selectedClient.clientCode}]</span>}
                   </div>
-                )}
-                <div className="nord-summary-items">
+                  {selectedSpId && (
+                    <div style={{ padding: "10px 14px", borderBottom: `1px solid ${G2}`, display: "flex", gap: 8 }}>
+                      <span style={{ fontSize: 13, color: G5, fontWeight: 600 }}>Vendedor:</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: G9 }}>{salespersons.find((s) => s.id === parseInt(selectedSpId))?.name}</span>
+                    </div>
+                  )}
                   {cart.map((item, idx) => (
-                    <div key={idx} className="nord-summary-row">
-                      <span>{item.product.name} ×{item.quantity}</span>
-                      <span>${(item.unitPrice * item.quantity).toLocaleString("es-AR")}</span>
+                    <div key={idx} style={{ display: "flex", justifyContent: "space-between", padding: "9px 14px", borderBottom: `1px solid ${G2}`, fontSize: 13 }}>
+                      <span style={{ color: G7 }}>{item.product.name} ×{item.quantity}</span>
+                      <span style={{ fontWeight: 600, color: G9 }}>${(item.unitPrice * item.quantity).toLocaleString("es-AR")}</span>
                     </div>
                   ))}
-                  <div className="nord-summary-total">
-                    <span>Total</span>
-                    <span>${cartTotal.toLocaleString("es-AR")}</span>
+                  <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 14px", background: "#FFF7F0", borderTop: `2px solid #FED7AA` }}>
+                    <span style={{ fontWeight: 700, color: G9 }}>Total</span>
+                    <span style={{ fontWeight: 800, fontSize: 18, color: C }}>${cartTotal.toLocaleString("es-AR")}</span>
                   </div>
                 </div>
               </div>
 
               {/* Payment & shipping */}
-              <div className="nord-section">
-                <h3 className="nord-section-title">Pago y entrega</h3>
-                <div className="nord-row">
-                  <div className="nord-field">
-                    <label className="nord-label">Método de pago</label>
-                    <select className="nord-select" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
-                      <option value="efectivo">Efectivo</option>
-                      <option value="transferencia">Transferencia</option>
-                      <option value="cheque">Cheque</option>
-                      <option value="mercadopago">Mercado Pago</option>
-                      <option value="tarjeta">Tarjeta</option>
-                      <option value="cuenta_corriente">Cuenta corriente</option>
-                    </select>
-                  </div>
-                  <div className="nord-field">
-                    <label className="nord-label">Entrega</label>
-                    <select className="nord-select" value={shippingMethod} onChange={(e) => setShippingMethod(e.target.value)}>
-                      <option value="retiro">Retiro en local</option>
-                      <option value="envio">Envío a domicilio</option>
-                    </select>
-                  </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div>
+                  <label style={labelStyle}>Método de pago</label>
+                  <select style={{ ...inputStyle, cursor: "pointer" }} value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}
+                    onFocus={(e) => { e.target.style.borderColor = C; }}
+                    onBlur={(e)  => { e.target.style.borderColor = G2; }}
+                  >
+                    <option value="efectivo">Efectivo</option>
+                    <option value="transferencia">Transferencia</option>
+                    <option value="cheque">Cheque</option>
+                    <option value="mercadopago">Mercado Pago</option>
+                    <option value="tarjeta">Tarjeta</option>
+                    <option value="cuenta_corriente">Cuenta corriente</option>
+                  </select>
                 </div>
-                <div className="nord-field">
-                  <label className="nord-label">Notas <span className="nord-optional">(opcional)</span></label>
-                  <textarea
-                    className="nord-textarea"
-                    rows={3}
-                    placeholder="Observaciones, instrucciones especiales..."
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                  />
+                <div>
+                  <label style={labelStyle}>Entrega</label>
+                  <select style={{ ...inputStyle, cursor: "pointer" }} value={shippingMethod} onChange={(e) => setShippingMethod(e.target.value)}
+                    onFocus={(e) => { e.target.style.borderColor = C; }}
+                    onBlur={(e)  => { e.target.style.borderColor = G2; }}
+                  >
+                    <option value="retiro">Retiro en local</option>
+                    <option value="envio">Envío a domicilio</option>
+                  </select>
                 </div>
               </div>
 
+              <div>
+                <label style={labelStyle}>
+                  Notas{" "}
+                  <span style={{ color: G4, textTransform: "none", fontWeight: 400, letterSpacing: 0 }}>(opcional)</span>
+                </label>
+                <textarea
+                  style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", minHeight: 80 }}
+                  rows={3}
+                  placeholder="Observaciones, instrucciones especiales..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  onFocus={(e) => { e.target.style.borderColor = C; e.target.style.boxShadow = `0 0 0 3px rgba(255,117,31,0.15)`; }}
+                  onBlur={(e)  => { e.target.style.borderColor = G2; e.target.style.boxShadow = "none"; }}
+                />
+              </div>
+
               {submitError && (
-                <div className="nord-error">{submitError}</div>
+                <div style={{ padding: "10px 14px", background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 8, color: "#DC2626", fontSize: 13 }}>
+                  {submitError}
+                </div>
               )}
             </div>
           )}
         </div>
 
-        {/* ── Footer ── */}
-        <div className="nord-footer">
-          <div className="nord-footer-left">
-            {step > 1 && (
+        {/* ── FOOTER ── */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "16px 24px", background: G05, borderTop: `1px solid ${G2}`,
+          borderRadius: "0 0 16px 16px", flexShrink: 0, gap: 10,
+        }}>
+          <div style={{ display: "flex", gap: 10 }}>
+            {step !== "client" && (
               <button
-                className="nord-btn nord-btn--secondary"
-                onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3)}
+                onClick={() => setStep(step === "confirm" ? "products" : "client")}
                 disabled={submitting}
-              >
-                ← Atrás
-              </button>
+                style={{ padding: "10px 20px", border: `2px solid ${G2}`, borderRadius: 10, background: "#fff", color: G5, fontWeight: 600, cursor: "pointer", fontSize: 14, transition: "background .12s" }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = G1)}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
+              >← Atrás</button>
             )}
+            <button
+              onClick={onClose}
+              style={{ padding: "10px 20px", border: `2px solid ${G2}`, borderRadius: 10, background: "#fff", color: G5, fontWeight: 600, cursor: "pointer", fontSize: 14, transition: "background .12s" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = G1)}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
+            >Cancelar</button>
           </div>
-          <div className="nord-footer-right">
-            {cart.length > 0 && step === 2 && (
-              <span className="nord-footer-total">
-                Total: <strong>${cartTotal.toLocaleString("es-AR")}</strong>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            {cart.length > 0 && step === "products" && (
+              <span style={{ fontSize: 14, color: G5 }}>
+                Total: <strong style={{ color: C }}>${cartTotal.toLocaleString("es-AR")}</strong>
               </span>
             )}
-            {step < 3 ? (
-              <button
-                className="nord-btn nord-btn--primary"
-                onClick={() => {
-                  if (step === 2 && cart.length === 0) return;
-                  setStep((s) => (s + 1) as 1 | 2 | 3);
-                }}
-                disabled={step === 2 && cart.length === 0}
-              >
-                {step === 2 ? "Revisar pedido →" : "Agregar productos →"}
-              </button>
-            ) : (
-              <button
-                className="nord-btn nord-btn--primary"
-                onClick={submit}
-                disabled={submitting || cart.length === 0}
-              >
-                {submitting ? "Creando..." : "✓ Crear orden"}
-              </button>
+            {step === "client" && (
+              <button onClick={() => setStep("products")}
+                style={{ padding: "10px 24px", background: C, color: "#fff", border: "none", borderRadius: 10, fontWeight: 700, cursor: "pointer", fontSize: 14, transition: "background .12s" }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = CD)}
+                onMouseLeave={(e) => (e.currentTarget.style.background = C)}
+              >Agregar productos →</button>
+            )}
+            {step === "products" && (
+              <button onClick={() => setStep("confirm")} disabled={cart.length === 0}
+                style={{ padding: "10px 24px", background: cart.length ? C : G2, color: cart.length ? "#fff" : G4, border: "none", borderRadius: 10, fontWeight: 700, cursor: cart.length ? "pointer" : "not-allowed", fontSize: 14, transition: "background .12s" }}
+                onMouseEnter={(e) => { if (cart.length) e.currentTarget.style.background = CD; }}
+                onMouseLeave={(e) => { if (cart.length) e.currentTarget.style.background = C; }}
+              >Revisar pedido →</button>
+            )}
+            {step === "confirm" && (
+              <button onClick={submit} disabled={submitting || !cart.length}
+                style={{ padding: "10px 24px", background: submitting || !cart.length ? G2 : C, color: submitting || !cart.length ? G4 : "#fff", border: "none", borderRadius: 10, fontWeight: 700, cursor: submitting || !cart.length ? "not-allowed" : "pointer", fontSize: 14, transition: "background .12s" }}
+                onMouseEnter={(e) => { if (!submitting && cart.length) e.currentTarget.style.background = CD; }}
+                onMouseLeave={(e) => { if (!submitting && cart.length) e.currentTarget.style.background = C; }}
+              >{submitting ? "Creando..." : "✓ Crear orden"}</button>
             )}
           </div>
         </div>
+
       </div>
     </div>
   );
