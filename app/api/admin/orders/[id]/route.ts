@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const session = await getSession();
-  if (!session || session.role !== "admin") {
+  if (!session || (session.role !== "admin" && session.role !== "superadmin")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
@@ -19,10 +19,11 @@ export async function GET(
   const order = await prisma.order.findUnique({
     where: { id: orderId },
     include: {
-      user: { select: { name: true, email: true } },
+      user: { select: { name: true, email: true, clientCode: true } },
+      salesperson: { select: { id: true, name: true } },
       items: {
         include: {
-          product: { select: { name: true, code: true } },
+          product: { select: { name: true, code: true, imageUrl: true, price: true } },
         },
       },
     },
