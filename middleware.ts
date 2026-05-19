@@ -16,15 +16,21 @@ const PUBLIC_PATHS = [
 // Accessible to both admin and superadmin
 const ADMIN_PATHS = [
   "/dashboard",
+  "/picking-notes",
   "/orders",
   "/users",
   "/clients",
   "/salespersons",
   "/audit",
   "/products",
+  "/api/admin/picking-notes",
   "/api/admin/clients",
   "/api/admin/salespersons",
   "/api/admin/orders",
+  "/api/admin/users",
+  "/api/admin/audit",
+  "/api/admin/stats",
+  "/api/admin/products",
 ];
 
 // Accessible ONLY to superadmin

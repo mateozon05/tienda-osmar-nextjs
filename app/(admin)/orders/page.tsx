@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import NewOrderModal from "@/components/admin/NewOrderModal";
 
 type Order = {
   id: number;
@@ -40,7 +39,6 @@ export default function OrdersPage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<number | null>(null);
-  const [showNewOrder, setShowNewOrder] = useState(false);
   const LIMIT = 20;
 
   const fetchOrders = useCallback(async () => {
@@ -75,9 +73,6 @@ export default function OrdersPage() {
 
   return (
     <div className="admin-page">
-      {showNewOrder && (
-        <NewOrderModal onClose={() => { setShowNewOrder(false); fetchOrders(); }} />
-      )}
       <div className="admin-page-header">
         <h1 className="admin-page-title">Órdenes</h1>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -89,13 +84,13 @@ export default function OrdersPage() {
             📋 Historial SIPE →
           </button>
           <button
-            onClick={() => setShowNewOrder(true)}
+            onClick={() => router.push("/picking-notes")}
             style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 16px", background: "var(--c1)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: ".85rem", cursor: "pointer" }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
-            Nueva Orden
+            Nueva Nota de Pedido
           </button>
         </div>
       </div>
