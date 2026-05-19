@@ -1,0 +1,280 @@
+{
+  "timestamp": "2026-05-14T23:43:54.573Z",
+  "created": 0,
+  "updated": 28,
+  "errors": [],
+  "groups": {
+    "ALEJANDRA MORENO": {
+      "originalNames": [
+        "ALEJANDRA MORENO VENDEDORA",
+        "ALEJANDRA MORENO VENDEDORA SAPHIRUS"
+      ],
+      "commissions": [
+        7,
+        2
+      ]
+    },
+    "ANTONIO": {
+      "originalNames": [
+        "ANTONIO"
+      ],
+      "commissions": [
+        10
+      ]
+    },
+    "CARLI Y ARA": {
+      "originalNames": [
+        "CARLI Y ARA",
+        "CARLOS Y ARA CON TRASLADO"
+      ],
+      "commissions": [
+        7,
+        10
+      ]
+    },
+    "DIONEL": {
+      "originalNames": [
+        "DIONEL 10",
+        "DIONEL 7"
+      ],
+      "commissions": [
+        10,
+        7
+      ]
+    },
+    "DOLO Y LEO": {
+      "originalNames": [
+        "DOLO Y LEO"
+      ],
+      "commissions": [
+        10
+      ]
+    },
+    "Elsa": {
+      "originalNames": [
+        "Elsa"
+      ],
+      "commissions": [
+        0.01
+      ]
+    },
+    "FACUNDO": {
+      "originalNames": [
+        "FACUNDO"
+      ],
+      "commissions": [
+        7
+      ]
+    },
+    "Leo": {
+      "originalNames": [
+        "Leo",
+        "LEO 5",
+        "LEO MAS 120"
+      ],
+      "commissions": [
+        7,
+        5,
+        2
+      ]
+    },
+    "LOLA": {
+      "originalNames": [
+        "LOLA 10",
+        "LOLA 7"
+      ],
+      "commissions": [
+        10,
+        7
+      ]
+    },
+    "LUCAS": {
+      "originalNames": [
+        "LUCAS",
+        "LUCAS GARCIA SAPHIRUS"
+      ],
+      "commissions": [
+        7,
+        2
+      ]
+    },
+    "MARCOS": {
+      "originalNames": [
+        "MARCOS 10",
+        "MARCOS 3",
+        "MARCOS 7",
+        "MARCOS SAPHIRUS"
+      ],
+      "commissions": [
+        10,
+        3,
+        7,
+        2
+      ]
+    },
+    "MARINA": {
+      "originalNames": [
+        "MARINA"
+      ],
+      "commissions": [
+        7
+      ]
+    },
+    "MATEO": {
+      "originalNames": [
+        "MATEO 10",
+        "MATEO 7",
+        "MATEO Saphirus"
+      ],
+      "commissions": [
+        10,
+        7,
+        2
+      ]
+    },
+    "MAXI GALLARDO": {
+      "originalNames": [
+        "MAXI GALLARDO"
+      ],
+      "commissions": [
+        10
+      ]
+    },
+    "NATALIA": {
+      "originalNames": [
+        "NATALIA 10",
+        "NATALIA 7",
+        "NATALIA SAPHIRUS"
+      ],
+      "commissions": [
+        10,
+        7,
+        2
+      ]
+    },
+    "NICO": {
+      "originalNames": [
+        "NICO 7",
+        "NICO JUSTIN 7",
+        "NICO SAPHIRUS 2"
+      ],
+      "commissions": [
+        7,
+        0,
+        2
+      ]
+    },
+    "NORBERTO": {
+      "originalNames": [
+        "NORBERTO 10",
+        "NORBERTO 7",
+        "NORBERTO SAPHIRUS"
+      ],
+      "commissions": [
+        10,
+        7,
+        2
+      ]
+    },
+    "Osmar": {
+      "originalNames": [
+        "Osmar"
+      ],
+      "commissions": [
+        0.01
+      ]
+    },
+    "PAME": {
+      "originalNames": [
+        "PAME",
+        "PAME SAPHIRUS"
+      ],
+      "commissions": [
+        7,
+        3
+      ]
+    },
+    "Paola": {
+      "originalNames": [
+        "Paola",
+        "PAOLA SAPHIRUS"
+      ],
+      "commissions": [
+        10,
+        2
+      ]
+    },
+    "PELUSA": {
+      "originalNames": [
+        "PELUSA 10",
+        "PELUSA 7"
+      ],
+      "commissions": [
+        10,
+        7
+      ]
+    },
+    "ROMI": {
+      "originalNames": [
+        "ROMI"
+      ],
+      "commissions": [
+        7
+      ]
+    },
+    "ROXANA": {
+      "originalNames": [
+        "ROXANA"
+      ],
+      "commissions": [
+        7
+      ]
+    },
+    "SAPHIRUS CARREFOUR": {
+      "originalNames": [
+        "SAPHIRUS CARREFOUR"
+      ],
+      "commissions": [
+        0
+      ]
+    },
+    "SEBA": {
+      "originalNames": [
+        "SEBA",
+        "SEBA RIPOLL"
+      ],
+      "commissions": [
+        2,
+        2
+      ]
+    },
+    "Sol": {
+      "originalNames": [
+        "Sol"
+      ],
+      "commissions": [
+        0.01
+      ]
+    },
+    "SUSANA": {
+      "originalNames": [
+        "SUSANA",
+        "SUSANA",
+        "SUSANA 2 SAPHIRUS"
+      ],
+      "commissions": [
+        7,
+        2,
+        2
+      ]
+    },
+    "WALTER Y EDITH": {
+      "originalNames": [
+        "WALTER Y EDITH"
+      ],
+      "commissions": [
+        10
+      ]
+    }
+  }
+}
