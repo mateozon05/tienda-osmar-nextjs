@@ -6,8 +6,9 @@ import { usePathname, useRouter } from "next/navigation";
 
 // Items para todos los admins
 const NAV = [
-  { href: "/dashboard",        label: "Dashboard",  icon: "📊",  exact: false },
-  { href: "/orders",           label: "Órdenes",    icon: "📦",  exact: false },
+  { href: "/dashboard",        label: "Dashboard",       icon: "📊",  exact: false },
+  { href: "/picking-notes",    label: "Notas de Pedido", icon: "📋",  exact: false },
+  { href: "/orders",           label: "Órdenes",         icon: "📦",  exact: false },
   { href: "/products",         label: "Productos",  icon: "🏷️", exact: true  },
   { href: "/products/images",  label: "Imágenes",   icon: "🖼️", exact: false },
   { href: "/clients",          label: "Clientes",   icon: "👥",  exact: false },

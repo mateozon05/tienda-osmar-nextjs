@@ -9,7 +9,7 @@ type Product   = { id: number; code: string; name: string; price: number; imageU
 type Salesperson = { id: number; name: string; defaultCommission: number };
 type CartItem  = { product: Product; quantity: number; unitPrice: number; mode: "unit" | "bulk" };
 type Step      = "client" | "products" | "confirm";
-type Props     = { onClose: () => void };
+type Props     = { onClose: () => void; onCreated?: () => void };
 
 /* ── Design tokens ────────────────────────────────────────── */
 const C   = "#FF751F";   // orange-500
@@ -23,7 +23,7 @@ const G1  = "#F3F4F6";   // gray-100
 const G05 = "#F9FAFB";   // gray-50
 
 /* ── Modal ────────────────────────────────────────────────── */
-export default function NewOrderModal({ onClose }: Props) {
+export default function NewOrderModal({ onClose, onCreated }: Props) {
   const router = useRouter();
   const [step, setStep] = useState<Step>("client");
 
@@ -44,8 +44,6 @@ export default function NewOrderModal({ onClose }: Props) {
   const productTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /* Step 3 */
-  const [paymentMethod, setPaymentMethod] = useState("efectivo");
-  const [shippingMethod, setShippingMethod] = useState("retiro");
   const [notes, setNotes]               = useState("");
   const [submitting, setSubmitting]     = useState(false);
   const [submitError, setSubmitError]   = useState("");
@@ -104,20 +102,38 @@ export default function NewOrderModal({ onClose }: Props) {
     if (!cart.length) { setSubmitError("Agregá al menos un producto."); return; }
     setSubmitting(true); setSubmitError("");
     try {
-      const res = await fetch("/api/admin/orders", {
+      const subtotal = cart.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
+      const res = await fetch("/api/admin/picking-notes", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          clientId: selectedClient?.id ?? null, clientCode: selectedClient?.clientCode ?? null,
-          clientName: selectedClient?.name ?? null, salespersonId: selectedSpId ? parseInt(selectedSpId) : null,
-          paymentMethod, shippingMethod, notes,
-          items: cart.map((i) => ({ productId: i.product.id, quantity: i.quantity, unitPrice: i.unitPrice })),
+          clientId:        selectedClient?.id       ?? null,
+          clientCode:      selectedClient?.clientCode ?? null,
+          clientName:      selectedClient?.name      ?? null,
+          salespersonId:   selectedSpId ? parseInt(selectedSpId) : null,
+          salespersonName: salespersons.find((s) => s.id === parseInt(selectedSpId))?.name ?? null,
+          notes,
+          subtotal,
+          tax:   0,
+          total: subtotal,
+          items: cart.map((i) => ({
+            productId: i.product.id,
+            code:      i.product.code,
+            name:      i.product.name,
+            quantity:  i.quantity,
+            unitPrice: i.unitPrice,
+            type:      i.mode === "bulk" ? "bulto" : "unidad",
+          })),
         }),
       });
       const data = await res.json();
-      if (!res.ok) { setSubmitError(data.error ?? "Error al crear la orden"); setSubmitting(false); return; }
-      onClose();
-      router.push(`/orders/${data.order.id}`);
-      router.refresh();
+      if (!res.ok) { setSubmitError(data.error ?? "Error al crear la nota de pedido"); setSubmitting(false); return; }
+      if (onCreated) {
+        onCreated();
+      } else {
+        onClose();
+        router.push(`/picking-notes/${data.note.id}`);
+        router.refresh();
+      }
     } catch { setSubmitError("Error de conexión. Intentá nuevamente."); setSubmitting(false); }
   }
 
@@ -154,8 +170,8 @@ export default function NewOrderModal({ onClose }: Props) {
           borderRadius: "16px 16px 0 0", background: "#fff", flexShrink: 0,
         }}>
           <div>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: G9, margin: 0 }}>Nueva Orden de Venta</h2>
-            <p style={{ fontSize: 13, color: G4, marginTop: 3, marginBottom: 0 }}>Completá los datos para crear una orden manual</p>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: G9, margin: 0 }}>📋 Nueva Nota de Pedido</h2>
+            <p style={{ fontSize: 13, color: G4, marginTop: 3, marginBottom: 0 }}>El depósito deberá confirmar la preparación antes de crear la Orden de Venta</p>
           </div>
           <button
             onClick={onClose}
@@ -418,6 +434,14 @@ export default function NewOrderModal({ onClose }: Props) {
           {step === "confirm" && (
             <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: 20 }}>
 
+              {/* Workflow warning */}
+              <div style={{ background: "#FFF7ED", border: "1px solid #FED7AA", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "#92400E", display: "flex", gap: 10, alignItems: "flex-start" }}>
+                <span style={{ fontSize: 18 }}>⚠️</span>
+                <div>
+                  <strong>Flujo obligatorio:</strong> Al crear la nota, se imprimirá para que el depósito la prepare físicamente y firme. Solo después de que se registre la confirmación del depósito en el sistema se podrá crear la Orden de Venta.
+                </div>
+              </div>
+
               {/* Summary */}
               <div>
                 <label style={labelStyle}>Resumen del pedido</label>
@@ -443,34 +467,6 @@ export default function NewOrderModal({ onClose }: Props) {
                     <span style={{ fontWeight: 700, color: G9 }}>Total</span>
                     <span style={{ fontWeight: 800, fontSize: 18, color: C }}>${cartTotal.toLocaleString("es-AR")}</span>
                   </div>
-                </div>
-              </div>
-
-              {/* Payment & shipping */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                <div>
-                  <label style={labelStyle}>Método de pago</label>
-                  <select style={{ ...inputStyle, cursor: "pointer" }} value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}
-                    onFocus={(e) => { e.target.style.borderColor = C; }}
-                    onBlur={(e)  => { e.target.style.borderColor = G2; }}
-                  >
-                    <option value="efectivo">Efectivo</option>
-                    <option value="transferencia">Transferencia</option>
-                    <option value="cheque">Cheque</option>
-                    <option value="mercadopago">Mercado Pago</option>
-                    <option value="tarjeta">Tarjeta</option>
-                    <option value="cuenta_corriente">Cuenta corriente</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={labelStyle}>Entrega</label>
-                  <select style={{ ...inputStyle, cursor: "pointer" }} value={shippingMethod} onChange={(e) => setShippingMethod(e.target.value)}
-                    onFocus={(e) => { e.target.style.borderColor = C; }}
-                    onBlur={(e)  => { e.target.style.borderColor = G2; }}
-                  >
-                    <option value="retiro">Retiro en local</option>
-                    <option value="envio">Envío a domicilio</option>
-                  </select>
                 </div>
               </div>
 
@@ -548,7 +544,7 @@ export default function NewOrderModal({ onClose }: Props) {
                 style={{ padding: "10px 24px", background: submitting || !cart.length ? G2 : C, color: submitting || !cart.length ? G4 : "#fff", border: "none", borderRadius: 10, fontWeight: 700, cursor: submitting || !cart.length ? "not-allowed" : "pointer", fontSize: 14, transition: "background .12s" }}
                 onMouseEnter={(e) => { if (!submitting && cart.length) e.currentTarget.style.background = CD; }}
                 onMouseLeave={(e) => { if (!submitting && cart.length) e.currentTarget.style.background = C; }}
-              >{submitting ? "Creando..." : "✓ Crear orden"}</button>
+              >{submitting ? "Creando…" : "📋 Crear Nota de Pedido"}</button>
             )}
           </div>
         </div>
