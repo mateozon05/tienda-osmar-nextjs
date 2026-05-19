@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { v2 as cloudinary } from "cloudinary";
 
 cloudinary.config({
@@ -14,6 +15,47 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const contentType = req.headers.get("content-type") ?? "";
+
+  // ── A) JSON body: re-upload URL to Cloudinary ──────────────────────────────
+  if (contentType.includes("application/json")) {
+    try {
+      const { imageUrl, productId } = await req.json();
+
+      if (!imageUrl || !productId) {
+        return NextResponse.json({ error: "Faltan datos: imageUrl y productId requeridos" }, { status: 400 });
+      }
+
+      let finalUrl: string = imageUrl;
+
+      // Si NO es de Cloudinary → re-subir desde URL
+      if (!imageUrl.includes("cloudinary.com")) {
+        const result = await cloudinary.uploader.upload(imageUrl, {
+          folder: "osmar-products",
+          transformation: [
+            { width: 800, height: 800, crop: "limit" },
+            { quality: "auto", fetch_format: "auto" },
+          ],
+          timeout: 60000,
+        });
+        finalUrl = result.secure_url;
+      }
+
+      // Actualizar la BD
+      await prisma.product.update({
+        where: { id: parseInt(String(productId)) },
+        data: { imageUrl: finalUrl },
+      });
+
+      return NextResponse.json({ success: true, url: finalUrl, wasUploaded: !imageUrl.includes("cloudinary.com") });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Error al procesar imagen";
+      console.error("Cloudinary URL upload error:", err);
+      return NextResponse.json({ error: msg }, { status: 500 });
+    }
+  }
+
+  // ── B) FormData body: direct file upload ────────────────────────────────────
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
@@ -23,16 +65,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Convert File to Buffer
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Upload to Cloudinary as a promise
     const result = await new Promise<{ secure_url: string; public_id: string }>(
       (resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           {
-            folder: "productos-osmar",
+            folder: "osmar-products",
             public_id: productCode
               ? `prod_${productCode.replace(/[^a-zA-Z0-9]/g, "_")}`
               : undefined,

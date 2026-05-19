@@ -21,7 +21,8 @@ const ACTION_META: Record<string, { label: string; icon: string; color: string }
   REGISTER:                { label: "Registro",                  icon: "📝", color: "#EEF2FF" },
   USER_APPROVED:           { label: "Usuario aprobado",          icon: "✅", color: "#D1FAE5" },
   USER_REJECTED:           { label: "Usuario rechazado",         icon: "❌", color: "#FEE2E2" },
-  USER_PRICE_LIST_CHANGED: { label: "Lista de precios cambiada", icon: "💰", color: "#FEF3C7" },
+  USER_PRICE_LIST_CHANGED:   { label: "Lista de precios cambiada", icon: "💰", color: "#FEF3C7" },
+  USER_SALESPERSON_CHANGED: { label: "Vendedor cambiado",          icon: "👤", color: "#EDE9FE" },
   ORDER_CREATED:           { label: "Pedido creado",             icon: "🛒", color: "#DBEAFE" },
   ORDER_STATUS_CHANGED:    { label: "Estado de pedido",          icon: "📦", color: "#EDE9FE" },
   PRICE_LIST_CREATED:      { label: "Lista creada",              icon: "🏷️", color: "#FEF3C7" },
@@ -35,7 +36,8 @@ const FILTERS = [
   { value: "USER_APPROVED",         label: "Aprobaciones" },
   { value: "USER_REJECTED",         label: "Rechazos" },
   { value: "ORDER_CREATED",         label: "Pedidos" },
-  { value: "USER_PRICE_LIST_CHANGED", label: "Listas" },
+  { value: "USER_PRICE_LIST_CHANGED",   label: "Listas" },
+  { value: "USER_SALESPERSON_CHANGED", label: "Vendedores" },
 ];
 
 function formatDetails(details: Record<string, unknown> | null): string {

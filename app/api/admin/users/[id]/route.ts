@@ -9,7 +9,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   const session = await getSession();
-  if (!session || session.role !== "admin") {
+  if (!session || (session.role !== "admin" && session.role !== "superadmin")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -19,14 +19,16 @@ export async function PATCH(
   }
 
   const body = await req.json();
-  const { status, priceListId } = body as {
+  const { status, priceListId, salespersonId } = body as {
     status?: "pending" | "approved" | "rejected";
     priceListId?: number | null;
+    salespersonId?: number | null;
   };
 
   const data: Record<string, unknown> = {};
   if (status !== undefined) data.status = status;
   if (priceListId !== undefined) data.priceListId = priceListId;
+  if (salespersonId !== undefined) data.salespersonId = salespersonId;
 
   if (Object.keys(data).length === 0) {
     return NextResponse.json({ error: "Nada que actualizar" }, { status: 400 });
@@ -37,12 +39,15 @@ export async function PATCH(
     data,
     select: {
       id: true, name: true, email: true, status: true,
-      priceList: { select: { id: true, name: true } },
+      priceList:   { select: { id: true, name: true, discountPercentage: true } },
+      salesperson: { select: { id: true, name: true } },
     },
   });
 
   // Audit + email notifications (fire-and-forget)
   const auditPromises: Promise<unknown>[] = [];
+
+  const adminName = session.email ?? undefined;
 
   if (status === "approved") {
     auditPromises.push(
@@ -51,15 +56,19 @@ export async function PATCH(
         entity:   "User",
         entityId: userId,
         userId:   session.userId,
-        userName: session.email,
+        userName: adminName,
         details:  { targetUser: user.name, targetEmail: user.email, priceList: user.priceList?.name },
-      }),
-      notifyUserApproved({
-        name:          user.name,
-        email:         user.email,
-        priceListName: user.priceList?.name ?? "Público General",
       })
     );
+    if (user.email) {
+      auditPromises.push(
+        notifyUserApproved({
+          name:          user.name,
+          email:         user.email,
+          priceListName: user.priceList?.name ?? "Público General",
+        })
+      );
+    }
   } else if (status === "rejected") {
     auditPromises.push(
       audit({
@@ -67,11 +76,13 @@ export async function PATCH(
         entity:   "User",
         entityId: userId,
         userId:   session.userId,
-        userName: session.email,
+        userName: adminName,
         details:  { targetUser: user.name, targetEmail: user.email },
-      }),
-      notifyUserRejected({ name: user.name, email: user.email })
+      })
     );
+    if (user.email) {
+      auditPromises.push(notifyUserRejected({ name: user.name, email: user.email }));
+    }
   } else if (priceListId !== undefined) {
     auditPromises.push(
       audit({
@@ -79,8 +90,19 @@ export async function PATCH(
         entity:   "User",
         entityId: userId,
         userId:   session.userId,
-        userName: session.email,
+        userName: adminName,
         details:  { targetUser: user.name, newPriceList: user.priceList?.name ?? null },
+      })
+    );
+  } else if (salespersonId !== undefined) {
+    auditPromises.push(
+      audit({
+        action:   "USER_SALESPERSON_CHANGED",
+        entity:   "User",
+        entityId: userId,
+        userId:   session.userId,
+        userName: adminName,
+        details:  { targetUser: user.name, newSalesperson: user.salesperson?.name ?? null },
       })
     );
   }

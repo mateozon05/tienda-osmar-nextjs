@@ -109,21 +109,29 @@ function ImageModal({ product, onClose, onSaved }: ImageModalProps) {
   }
 
   async function handleSave() {
-    const finalUrl = tab === "url" ? urlInput.trim() : urlInput;
+    const finalUrl = (tab === "url" ? urlInput.trim() : urlInput);
+    if (!finalUrl) {
+      setError("Ingresá una URL válida.");
+      return;
+    }
     setSaving(true);
     setError("");
 
     try {
-      const res = await fetch(`/api/admin/products/${product.id}`, {
-        method: "PATCH",
+      // Siempre pasar por el endpoint que re-sube a Cloudinary si no es ya Cloudinary
+      const res = await fetch("/api/admin/products/upload-image", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl: finalUrl || null }),
+        body: JSON.stringify({ imageUrl: finalUrl, productId: product.id }),
       });
-      if (!res.ok) throw new Error("Error al guardar");
-      onSaved(product.id, finalUrl || null);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Error al guardar");
+      const savedUrl = data.url ?? finalUrl;
+      setPreview(savedUrl);
+      onSaved(product.id, savedUrl);
       onClose();
-    } catch {
-      setError("Error al guardar. Intente de nuevo.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Error al guardar. Intente de nuevo.");
     } finally {
       setSaving(false);
     }
@@ -238,6 +246,9 @@ function ImageModal({ product, onClose, onSaved }: ImageModalProps) {
                   setPreview(e.target.value || null);
                 }}
               />
+              <p style={{ fontSize: 11, color: "#9CA3AF", margin: "6px 0 0", lineHeight: 1.4 }}>
+                💡 Al guardar, la imagen se re-sube automáticamente a Cloudinary para evitar problemas de acceso.
+              </p>
               <a
                 href={buildGoogleImgUrl(product.name)}
                 target="_blank"
@@ -272,7 +283,7 @@ function ImageModal({ product, onClose, onSaved }: ImageModalProps) {
             onClick={handleSave}
             disabled={saving || uploading}
           >
-            <IconCheck /> {saving ? "Guardando…" : "Guardar"}
+            <IconCheck /> {saving ? "Subiendo a Cloudinary…" : "Guardar"}
           </button>
         </div>
       </div>

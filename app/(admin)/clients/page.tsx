@@ -17,12 +17,19 @@ interface Client {
   lastLogin: string | null;
   createdAt: string;
   priceList: { id: number; name: string } | null;
+  salesperson: { id: number; name: string } | null;
   _count: { orders: number };
 }
 
 interface PriceList {
   id: number;
   name: string;
+}
+
+interface SalespersonOption {
+  id: number;
+  name: string;
+  defaultCommission: number;
 }
 
 // ── SVG icons ─────────────────────────────────────────────────────────────────
@@ -69,12 +76,14 @@ function StatusBadge({ status }: { status: string }) {
 interface DetailModalProps {
   client: Client;
   priceLists: PriceList[];
+  salespersons: SalespersonOption[];
   onClose: () => void;
   onUpdated: (c: Client) => void;
 }
-function DetailModal({ client, priceLists, onClose, onUpdated }: DetailModalProps) {
-  const [status,      setStatus]      = useState(client.status);
-  const [priceListId, setPriceListId] = useState(client.priceList?.id?.toString() ?? "");
+function DetailModal({ client, priceLists, salespersons, onClose, onUpdated }: DetailModalProps) {
+  const [status,        setStatus]        = useState(client.status);
+  const [priceListId,   setPriceListId]   = useState(client.priceList?.id?.toString() ?? "");
+  const [salespersonId, setSalespersonId] = useState(client.salesperson?.id?.toString() ?? "");
   const [saving, setSaving] = useState(false);
   const [msg,    setMsg]    = useState("");
 
@@ -87,13 +96,15 @@ function DetailModal({ client, priceLists, onClose, onUpdated }: DetailModalProp
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status,
-          priceListId: priceListId || null,
+          priceListId:   priceListId   || null,
+          salespersonId: salespersonId || null,
         }),
       });
       if (!res.ok) throw new Error("Error al guardar");
       const updated = await res.json();
       const pl = priceLists.find((p) => p.id === updated.priceListId) ?? null;
-      onUpdated({ ...client, status: updated.status, priceList: pl });
+      const sp = salespersons.find((s) => s.id === updated.salespersonId) ?? null;
+      onUpdated({ ...client, status: updated.status, priceList: pl, salesperson: sp });
       setMsg("✅ Guardado");
       setTimeout(onClose, 800);
     } catch {
@@ -191,6 +202,19 @@ function DetailModal({ client, priceLists, onClose, onUpdated }: DetailModalProp
                 ))}
               </select>
             </div>
+            <div className="cli-modal-field">
+              <label className="cli-modal-label">Vendedor asignado</label>
+              <select
+                className="cli-modal-select"
+                value={salespersonId}
+                onChange={(e) => setSalespersonId(e.target.value)}
+              >
+                <option value="">— Sin vendedor —</option>
+                {salespersons.map((sp) => (
+                  <option key={sp.id} value={sp.id}>{sp.name} ({sp.defaultCommission}%)</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
@@ -209,9 +233,10 @@ function DetailModal({ client, priceLists, onClose, onUpdated }: DetailModalProp
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function ClientsPage() {
-  const [clients,    setClients]    = useState<Client[]>([]);
-  const [total,      setTotal]      = useState(0);
-  const [priceLists, setPriceLists] = useState<PriceList[]>([]);
+  const [clients,      setClients]      = useState<Client[]>([]);
+  const [total,        setTotal]        = useState(0);
+  const [priceLists,   setPriceLists]   = useState<PriceList[]>([]);
+  const [salespersons, setSalespersons] = useState<SalespersonOption[]>([]);
   const [loading,    setLoading]    = useState(true);
   const [search,     setSearch]     = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -245,6 +270,9 @@ export default function ClientsPage() {
     fetch("/api/admin/price-lists")
       .then((r) => r.json())
       .then((d) => setPriceLists(d.priceLists ?? []));
+    fetch("/api/admin/salespersons?status=active")
+      .then((r) => r.json())
+      .then((d) => setSalespersons(d.salespersons ?? []));
   }, []);
 
   // Reset page when filters change
@@ -305,6 +333,7 @@ export default function ClientsPage() {
               <th>Contacto</th>
               <th>Ciudad</th>
               <th>Lista precios</th>
+              <th>Vendedor</th>
               <th>Pedidos</th>
               <th>Estado</th>
               <th>Último acceso</th>
@@ -336,6 +365,11 @@ export default function ClientsPage() {
                   {c.priceList
                     ? <span className="cli-pricelist">{c.priceList.name}</span>
                     : <span className="cli-no-pricelist">General</span>}
+                </td>
+                <td>
+                  {c.salesperson
+                    ? <span className="cli-salesperson">{c.salesperson.name}</span>
+                    : <span className="cli-no-pricelist">—</span>}
                 </td>
                 <td className="cli-td-center">
                   <span className="cli-orders-count">{c._count.orders}</span>
@@ -385,6 +419,7 @@ export default function ClientsPage() {
         <DetailModal
           client={selected}
           priceLists={priceLists}
+          salespersons={salespersons}
           onClose={() => setSelected(null)}
           onUpdated={handleUpdated}
         />
