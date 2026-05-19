@@ -43,3 +43,8 @@ next-env.d.ts
 /app/generated/prisma
 
 .vercel
+
+# Local product images & catalogs (uploaded to Cloudinary)
+public/product-images/
+public/Catalogo-*.pdf
+public/logo-osmar-backup.png
