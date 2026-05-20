@@ -29,6 +29,7 @@ model Salesperson {
   clientLinks        ClientSalesperson[]
   assignedUsers      User[]
   orders             Order[]
+  pickingNotes       PickingNote[]
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
 
@@ -67,6 +68,7 @@ model User {
   salesperson        Salesperson?        @relation(fields: [salespersonId], references: [id], onDelete: SetNull)
   salespersonClients ClientSalesperson[]
   orders             Order[]
+  pickingNotes       PickingNote[]
   cart               Cart?
   lastLogin          DateTime?
   createdAt          DateTime            @default(now())
@@ -100,9 +102,10 @@ model Product {
   unitPrice     Float?
   categoryId    Int?
   category      Category?      @relation(fields: [categoryId], references: [id])
-  cartItems     CartItem[]
-  orderItems    OrderItem[]
-  productPrices ProductPrice[]
+  cartItems        CartItem[]
+  orderItems       OrderItem[]
+  productPrices    ProductPrice[]
+  pickingNoteItems PickingNoteItem[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -147,6 +150,75 @@ model CartItem {
   product   Product @relation(fields: [productId], references: [id])
 
   @@unique([cartId, productId])
+}
+
+model PickingNote {
+  id              Int               @id @default(autoincrement())
+  number          String            @unique               // NP-0001, NP-0002, …
+
+  // Cliente
+  userId          Int?
+  user            User?             @relation(fields: [userId], references: [id])
+  clientCode      String?
+  clientName      String?
+
+  // Vendedor
+  salespersonId   Int?
+  salesperson     Salesperson?      @relation(fields: [salespersonId], references: [id], onDelete: SetNull)
+  salespersonName String?
+
+  // Estado del flujo
+  // "pending"   = Creada, pendiente de preparación
+  // "preparing" = En preparación en el depósito
+  // "confirmed" = Confirmada y firmada por depósito
+  // "cancelled" = Cancelada
+  status          String            @default("pending")
+
+  // Firma del depósito
+  confirmedAt     DateTime?
+  confirmedBy     String?
+  confirmedNotes  String?
+
+  // Relación con Orden de Venta (se crea desde la nota)
+  orderId         Int?              @unique
+  order           Order?            @relation(fields: [orderId], references: [id])
+
+  // Totales
+  subtotal        Float             @default(0)
+  tax             Float             @default(0)
+  total           Float             @default(0)
+
+  // Metadata
+  notes           String?
+  printedAt       DateTime?
+  printCount      Int               @default(0)
+
+  items           PickingNoteItem[]
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([status])
+  @@index([clientCode])
+  @@index([createdAt])
+}
+
+model PickingNoteItem {
+  id              Int         @id @default(autoincrement())
+  pickingNoteId   Int
+  pickingNote     PickingNote @relation(fields: [pickingNoteId], references: [id], onDelete: Cascade)
+  productId       Int?
+  product         Product?    @relation(fields: [productId], references: [id])
+  productCode     String?
+  productName     String
+  quantity        Int
+  unitPrice       Float
+  type            String      @default("unidad")
+  subtotal        Float
+
+  // Para control del depósito
+  pickedQuantity  Int?
+  notes           String?
 }
 
 model Order {
@@ -215,6 +287,7 @@ model Order {
   user             User?        @relation(fields: [userId], references: [id])
   salesperson      Salesperson? @relation(fields: [salespersonId], references: [id])
   items            OrderItem[]
+  pickingNote      PickingNote?  // Nota de pedido de origen (back-reference)
 
   @@index([userId])
   @@index([clientCode])
