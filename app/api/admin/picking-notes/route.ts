@@ -65,35 +65,47 @@ export async function POST(req: NextRequest) {
 
   try {
     const body   = await req.json();
+    console.log("[picking-notes POST] body:", JSON.stringify({
+      clientId: body.clientId, clientName: body.clientName,
+      salespersonId: body.salespersonId, subtotal: body.subtotal,
+      itemsCount: (body.items ?? []).length,
+      firstItem: body.items?.[0],
+    }));
+
     const number = await generateNumber();
+
+    const items = (body.items ?? []).map((item: {
+      productId?: number | string; code?: string; name: string;
+      quantity: number | string; unitPrice: number | string; type?: string;
+    }) => {
+      const qty       = parseInt(String(item.quantity ?? 1));
+      const unitPrice = Number(item.unitPrice ?? 0);
+      const productId = item.productId ? parseInt(String(item.productId)) : null;
+      return {
+        productId,
+        productCode: item.code      ?? null,
+        productName: item.name      ?? "Sin nombre",
+        quantity:    isNaN(qty)       ? 1    : qty,
+        unitPrice:   isNaN(unitPrice) ? 0    : unitPrice,
+        type:        item.type        ?? "unidad",
+        subtotal:    (isNaN(unitPrice) ? 0 : unitPrice) * (isNaN(qty) ? 1 : qty),
+      };
+    });
 
     const note = await prisma.pickingNote.create({
       data: {
         number,
-        userId:          body.clientId   ? parseInt(body.clientId)   : null,
-        clientCode:      body.clientCode ?? null,
-        clientName:      body.clientName ?? null,
-        salespersonId:   body.salespersonId ? parseInt(body.salespersonId) : null,
+        userId:          body.clientId     ? parseInt(String(body.clientId))     : null,
+        clientCode:      body.clientCode   ?? null,
+        clientName:      body.clientName   ?? null,
+        salespersonId:   body.salespersonId ? parseInt(String(body.salespersonId)) : null,
         salespersonName: body.salespersonName ?? null,
         subtotal:        Number(body.subtotal ?? 0),
-        tax:             Number(body.tax ?? 0),
-        total:           Number(body.total ?? 0),
+        tax:             Number(body.tax      ?? 0),
+        total:           Number(body.total    ?? 0),
         notes:           body.notes ?? null,
         status:          "pending",
-        items: {
-          create: (body.items ?? []).map((item: {
-            productId?: number; code?: string; name: string;
-            quantity: number; unitPrice: number; type?: string;
-          }) => ({
-            productId:   item.productId ?? null,
-            productCode: item.code      ?? null,
-            productName: item.name,
-            quantity:    item.quantity,
-            unitPrice:   item.unitPrice,
-            type:        item.type ?? "unidad",
-            subtotal:    item.unitPrice * item.quantity,
-          })),
-        },
+        items:           { create: items },
       },
       include: {
         items:       true,
@@ -103,8 +115,12 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ note }, { status: 201 });
-  } catch (err) {
-    console.error("picking-notes POST:", err);
-    return NextResponse.json({ error: "Error al crear la nota de pedido" }, { status: 500 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[picking-notes POST] ERROR:", message);
+    return NextResponse.json(
+      { error: message },
+      { status: 500 }
+    );
   }
 }
