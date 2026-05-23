@@ -31,12 +31,15 @@ interface PickingNote {
   salesperson: { name: string } | null;
 }
 
-function fmt(n: number) {
-  return new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", minimumFractionDigits: 2 }).format(n);
-}
 function fmtDate(s: string | null) {
   if (!s) return "—";
-  return new Date(s).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  return new Date(s).toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export default function PrintPickingNote({ note }: { note: PickingNote }) {
@@ -55,8 +58,16 @@ export default function PrintPickingNote({ note }: { note: PickingNote }) {
       maxWidth: "210mm",
       margin: "0 auto",
     }}>
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "2px solid #000", paddingBottom: 12, marginBottom: 12 }}>
+
+      {/* ── Header ── */}
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        borderBottom: "2px solid #000",
+        paddingBottom: 12,
+        marginBottom: 12,
+      }}>
         <div>
           <div style={{ fontSize: 22, fontWeight: 900, color: "#FF751F" }}>OSMAR</div>
           <div style={{ fontSize: 10, color: "#555" }}>Distribuidora Osmar</div>
@@ -68,7 +79,7 @@ export default function PrintPickingNote({ note }: { note: PickingNote }) {
         </div>
       </div>
 
-      {/* Client / Salesperson info */}
+      {/* ── Datos del cliente / vendedor ── */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
         <div style={{ border: "1px solid #ddd", borderRadius: 4, padding: 10 }}>
           <div style={{ fontWeight: 700, fontSize: 10, textTransform: "uppercase", color: "#666", marginBottom: 4 }}>CLIENTE</div>
@@ -83,78 +94,43 @@ export default function PrintPickingNote({ note }: { note: PickingNote }) {
         </div>
       </div>
 
-      {/* Items */}
-      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 14, fontSize: 11 }}>
+      {/* ── Tabla de productos ── */}
+      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 20, fontSize: 11 }}>
         <thead>
-          <tr style={{ background: "#f4f4f4" }}>
-            <th style={{ border: "1px solid #ccc", padding: "6px 8px", textAlign: "left" }}>Código</th>
-            <th style={{ border: "1px solid #ccc", padding: "6px 8px", textAlign: "left" }}>Producto</th>
-            <th style={{ border: "1px solid #ccc", padding: "6px 8px", textAlign: "center" }}>Tipo</th>
-            <th style={{ border: "1px solid #ccc", padding: "6px 8px", textAlign: "center" }}>Cantidad</th>
-            <th style={{ border: "1px solid #ccc", padding: "6px 8px", textAlign: "center", width: 60 }}>✓ Preparado</th>
-            <th style={{ border: "1px solid #ccc", padding: "6px 8px", textAlign: "right" }}>P. Unit.</th>
-            <th style={{ border: "1px solid #ccc", padding: "6px 8px", textAlign: "right" }}>Subtotal</th>
+          <tr style={{ background: "#fff" }}>
+            <th style={{ border: "1px solid #ccc", padding: "7px 8px", textAlign: "left",   color: "#000", fontWeight: 700 }}>Código</th>
+            <th style={{ border: "1px solid #ccc", padding: "7px 8px", textAlign: "left",   color: "#000", fontWeight: 700 }}>Producto</th>
+            <th style={{ border: "1px solid #ccc", padding: "7px 8px", textAlign: "center", color: "#000", fontWeight: 700, width: 60 }}>Tipo</th>
+            <th style={{ border: "1px solid #ccc", padding: "7px 8px", textAlign: "center", color: "#000", fontWeight: 700, width: 80 }}>Cant. pedida</th>
+            <th style={{ border: "1px solid #ccc", padding: "7px 8px", textAlign: "center", color: "#000", fontWeight: 700, width: 100 }}>Cant. preparada</th>
+            <th style={{ border: "1px solid #ccc", padding: "7px 8px", textAlign: "left",   color: "#000", fontWeight: 700 }}>Observaciones</th>
           </tr>
         </thead>
         <tbody>
           {note.items.map((item, i) => (
             <tr key={item.id} style={{ background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
-              <td style={{ border: "1px solid #ddd", padding: "5px 8px", color: "#555" }}>
+              <td style={{ border: "1px solid #ddd", padding: "6px 8px", color: "#555" }}>
                 {item.productCode ?? "—"}
               </td>
-              <td style={{ border: "1px solid #ddd", padding: "5px 8px", fontWeight: 500 }}>
+              <td style={{ border: "1px solid #ddd", padding: "6px 8px", fontWeight: 500 }}>
                 {item.productName}
               </td>
-              <td style={{ border: "1px solid #ddd", padding: "5px 8px", textAlign: "center", color: "#555" }}>
+              <td style={{ border: "1px solid #ddd", padding: "6px 8px", textAlign: "center", color: "#555" }}>
                 {item.type}
               </td>
-              <td style={{ border: "1px solid #ddd", padding: "5px 8px", textAlign: "center", fontWeight: 700 }}>
+              <td style={{ border: "1px solid #ddd", padding: "6px 8px", textAlign: "center", fontWeight: 700 }}>
                 {item.quantity}
               </td>
-              <td style={{ border: "1px solid #ddd", padding: "5px 8px", textAlign: "center" }}>
-                {/* Empty checkbox for depot to fill manually */}
-                <span style={{
-                  display: "inline-block",
-                  width: 22,
-                  height: 22,
-                  border: "1.5px solid #333",
-                  borderRadius: 3,
-                  textAlign: "center",
-                  lineHeight: "22px",
-                  fontSize: 13,
-                }}>
-                  {item.pickedQuantity !== null ? "✓" : ""}
-                </span>
-              </td>
-              <td style={{ border: "1px solid #ddd", padding: "5px 8px", textAlign: "right" }}>
-                {fmt(item.unitPrice)}
-              </td>
-              <td style={{ border: "1px solid #ddd", padding: "5px 8px", textAlign: "right", fontWeight: 600 }}>
-                {fmt(item.subtotal)}
-              </td>
+              {/* Columna vacía — depósito completa a mano */}
+              <td style={{ border: "1px solid #ddd", padding: "6px 8px", minHeight: 28 }} />
+              {/* Columna vacía — observaciones a mano */}
+              <td style={{ border: "1px solid #ddd", padding: "6px 8px", minHeight: 28 }} />
             </tr>
           ))}
         </tbody>
       </table>
 
-      {/* Totals */}
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 20 }}>
-        <div style={{ minWidth: 220 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid #eee", fontSize: 11, color: "#555" }}>
-            <span>Subtotal</span><span>{fmt(note.subtotal)}</span>
-          </div>
-          {note.tax > 0 && (
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid #eee", fontSize: 11, color: "#555" }}>
-              <span>IVA</span><span>{fmt(note.tax)}</span>
-            </div>
-          )}
-          <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", fontWeight: 800, fontSize: 13 }}>
-            <span>TOTAL</span><span>{fmt(note.total)}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Signature boxes */}
+      {/* ── Sección de firmas ── */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginTop: 8 }}>
         <div style={{ border: "1px solid #333", borderRadius: 4, padding: 14, minHeight: 80 }}>
           <div style={{ fontWeight: 700, fontSize: 10, textTransform: "uppercase", marginBottom: 8 }}>
@@ -174,7 +150,7 @@ export default function PrintPickingNote({ note }: { note: PickingNote }) {
         </div>
       </div>
 
-      {/* Confirmed stamp */}
+      {/* ── Sello confirmado (si aplica) ── */}
       {note.status === "confirmed" && note.confirmedBy && (
         <div style={{
           marginTop: 16,
@@ -194,10 +170,18 @@ export default function PrintPickingNote({ note }: { note: PickingNote }) {
         </div>
       )}
 
-      {/* Footer */}
-      <div style={{ marginTop: 20, borderTop: "1px solid #eee", paddingTop: 8, fontSize: 9, color: "#aaa", textAlign: "center" }}>
+      {/* ── Footer ── */}
+      <div style={{
+        marginTop: 20,
+        borderTop: "1px solid #eee",
+        paddingTop: 8,
+        fontSize: 9,
+        color: "#aaa",
+        textAlign: "center",
+      }}>
         {note.number} · Generado el {new Date().toLocaleDateString("es-AR")} · Sistema Osmar
       </div>
+
     </div>
   );
 }
