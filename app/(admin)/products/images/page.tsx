@@ -131,7 +131,15 @@ function ImageModal({ product, onClose, onSaved }: ImageModalProps) {
       onSaved(product.id, savedUrl);
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Error al guardar. Intente de nuevo.");
+      if (tab === "url") {
+        setError(
+          "No se pudo obtener la imagen de ese sitio web. " +
+          "Intentá hacer click derecho en la imagen → Guardar imagen → " +
+          "y usar el botón Subir archivo."
+        );
+      } else {
+        setError(err instanceof Error ? err.message : "Error al guardar. Intente de nuevo.");
+      }
     } finally {
       setSaving(false);
     }

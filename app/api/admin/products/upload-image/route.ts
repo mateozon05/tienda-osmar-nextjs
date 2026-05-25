@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import https from "https";
+import http from "http";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { v2 as cloudinary } from "cloudinary";
@@ -8,6 +10,52 @@ cloudinary.config({
   api_key:    process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+/**
+ * Descarga una imagen desde una URL externa y la devuelve como Buffer.
+ * Envía headers de navegador para pasar hotlink-protection / CORS básico.
+ */
+async function downloadImageToBuffer(url: string): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const protocol = url.startsWith("https") ? https : http;
+    const req = protocol.get(
+      url,
+      {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+          Accept: "image/webp,image/apng,image/*,*/*;q=0.8",
+          Referer: new URL(url).origin,
+        },
+      },
+      (res) => {
+        // Seguir redirecciones
+        if (
+          res.statusCode &&
+          res.statusCode >= 300 &&
+          res.statusCode < 400 &&
+          res.headers.location
+        ) {
+          resolve(downloadImageToBuffer(res.headers.location));
+          return;
+        }
+        if (res.statusCode && res.statusCode >= 400) {
+          reject(new Error(`HTTP ${res.statusCode} al descargar imagen`));
+          return;
+        }
+        const chunks: Buffer[] = [];
+        res.on("data", (chunk: Buffer) => chunks.push(chunk));
+        res.on("end", () => resolve(Buffer.concat(chunks)));
+        res.on("error", reject);
+      }
+    );
+    req.on("error", reject);
+    req.setTimeout(20000, () => {
+      req.destroy();
+      reject(new Error("Timeout descargando imagen"));
+    });
+  });
+}
 
 export async function POST(req: NextRequest) {
   const session = await getSession();
@@ -28,17 +76,52 @@ export async function POST(req: NextRequest) {
 
       let finalUrl: string = imageUrl;
 
-      // Si NO es de Cloudinary → re-subir desde URL
+      // Si NO es de Cloudinary → re-subir desde URL (con fallback por descarga manual)
       if (!imageUrl.includes("cloudinary.com")) {
-        const result = await cloudinary.uploader.upload(imageUrl, {
-          folder: "osmar-products",
-          transformation: [
-            { width: 800, height: 800, crop: "limit" },
-            { quality: "auto", fetch_format: "auto" },
-          ],
-          timeout: 60000,
-        });
-        finalUrl = result.secure_url;
+        let uploadResult: { secure_url: string };
+
+        try {
+          // Intento 1: subida directa desde URL
+          uploadResult = await cloudinary.uploader.upload(imageUrl, {
+            folder: "osmar-products",
+            transformation: [
+              { width: 800, height: 800, crop: "limit" },
+              { quality: "auto", fetch_format: "auto" },
+            ],
+            timeout: 30000,
+          });
+        } catch (directError) {
+          // Intento 2: descargar la imagen en el servidor y subirla como buffer
+          // (evita CORS / hotlink-protection del sitio externo)
+          console.log(
+            "Subida directa falló, intentando descarga manual…",
+            directError instanceof Error ? directError.message : directError
+          );
+
+          const imageBuffer = await downloadImageToBuffer(imageUrl);
+
+          uploadResult = await new Promise<{ secure_url: string }>(
+            (resolve, reject) => {
+              cloudinary.uploader
+                .upload_stream(
+                  {
+                    folder: "osmar-products",
+                    transformation: [
+                      { width: 800, height: 800, crop: "limit" },
+                      { quality: "auto", fetch_format: "auto" },
+                    ],
+                  },
+                  (error, result) => {
+                    if (error || !result) reject(error ?? new Error("Upload stream falló"));
+                    else resolve(result as { secure_url: string });
+                  }
+                )
+                .end(imageBuffer);
+            }
+          );
+        }
+
+        finalUrl = uploadResult.secure_url;
       }
 
       // Actualizar la BD
@@ -49,9 +132,14 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({ success: true, url: finalUrl, wasUploaded: !imageUrl.includes("cloudinary.com") });
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Error al procesar imagen";
       console.error("Cloudinary URL upload error:", err);
-      return NextResponse.json({ error: msg }, { status: 500 });
+      return NextResponse.json(
+        {
+          error:
+            "No se pudo procesar la imagen. Intentá con otra URL o subí el archivo directamente.",
+        },
+        { status: 500 }
+      );
     }
   }
 
