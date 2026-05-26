@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import https from "https";
-import http from "http";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { v2 as cloudinary } from "cloudinary";
@@ -13,48 +11,36 @@ cloudinary.config({
 
 /**
  * Descarga una imagen desde una URL externa y la devuelve como Buffer.
- * Envía headers de navegador para pasar hotlink-protection / CORS básico.
+ *
+ * Estrategia de dos intentos:
+ *  1. Sin headers — funciona con WAFs que bloquean User-Agent de navegadores
+ *     (ej: dixlimpieza.com y sitios con "reverse hotlink protection")
+ *  2. Con headers de navegador — funciona con sitios que requieren Referer/UA
+ *     (ej: sitios con hotlink-protection tradicional)
  */
 async function downloadImageToBuffer(url: string): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const protocol = url.startsWith("https") ? https : http;
-    const req = protocol.get(
-      url,
-      {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-          Accept: "image/webp,image/apng,image/*,*/*;q=0.8",
-          Referer: new URL(url).origin,
-        },
-      },
-      (res) => {
-        // Seguir redirecciones
-        if (
-          res.statusCode &&
-          res.statusCode >= 300 &&
-          res.statusCode < 400 &&
-          res.headers.location
-        ) {
-          resolve(downloadImageToBuffer(res.headers.location));
-          return;
-        }
-        if (res.statusCode && res.statusCode >= 400) {
-          reject(new Error(`HTTP ${res.statusCode} al descargar imagen`));
-          return;
-        }
-        const chunks: Buffer[] = [];
-        res.on("data", (chunk: Buffer) => chunks.push(chunk));
-        res.on("end", () => resolve(Buffer.concat(chunks)));
-        res.on("error", reject);
-      }
-    );
-    req.on("error", reject);
-    req.setTimeout(20000, () => {
-      req.destroy();
-      reject(new Error("Timeout descargando imagen"));
+  async function fetchAttempt(headers: HeadersInit): Promise<Buffer> {
+    const res = await fetch(url, { headers });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const contentType = res.headers.get("content-type") ?? "";
+    if (!contentType.startsWith("image/")) {
+      throw new Error(`Respuesta no es imagen (${contentType})`);
+    }
+    return Buffer.from(await res.arrayBuffer());
+  }
+
+  // Intento 1: sin headers (pasa WAFs que bloquean User-Agent)
+  try {
+    return await fetchAttempt({});
+  } catch {
+    // Intento 2: con headers de navegador (pasa hotlink-protection tradicional)
+    return await fetchAttempt({
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      Accept: "image/webp,image/apng,image/*,*/*;q=0.8",
+      Referer: new URL(url).origin,
     });
-  });
+  }
 }
 
 export async function POST(req: NextRequest) {
