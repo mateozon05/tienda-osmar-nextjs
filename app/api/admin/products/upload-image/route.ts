@@ -57,7 +57,7 @@ async function uploadToCloudinary(
   publicId?: string
 ): Promise<string> {
   const fd = new FormData();
-  fd.append("file", new Blob([buffer], { type: mimeType }), "image.jpg");
+  fd.append("file", new Blob([new Uint8Array(buffer)], { type: mimeType }), "image.jpg");
   fd.append("upload_preset", UPLOAD_PRESET);
   if (publicId) fd.append("public_id", publicId);
 
