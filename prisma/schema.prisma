@@ -90,6 +90,7 @@ model Category {
 model Product {
   id            Int            @id @default(autoincrement())
   code          String         @unique
+  barcode       String?        // Código de barras para importación SIPE
   name          String
   description   String?
   price         Float

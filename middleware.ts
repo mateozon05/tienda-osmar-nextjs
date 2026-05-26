@@ -11,6 +11,7 @@ const PUBLIC_PATHS = [
   "/register",
   "/api/auth/login",
   "/api/auth/register",
+  "/api/cart",          // carrito accesible sin cuenta (guests)
 ];
 
 // Accessible to both admin and superadmin
