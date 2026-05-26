@@ -9,6 +9,9 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Preset sin firma — no requiere api_secret con permisos de "create"
+const UPLOAD_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET ?? "osmar-products-unsigned";
+
 /**
  * Descarga una imagen desde una URL externa y la devuelve como Buffer.
  *
@@ -67,9 +70,8 @@ export async function POST(req: NextRequest) {
         let uploadResult: { secure_url: string };
 
         try {
-          // Intento 1: subida directa desde URL
-          uploadResult = await cloudinary.uploader.upload(imageUrl, {
-            folder: "osmar-products",
+          // Intento 1: subida directa desde URL (unsigned)
+          uploadResult = await cloudinary.uploader.unsigned_upload(imageUrl, UPLOAD_PRESET, {
             transformation: [
               { width: 800, height: 800, crop: "limit" },
               { quality: "auto", fetch_format: "auto" },
@@ -77,8 +79,7 @@ export async function POST(req: NextRequest) {
             timeout: 30000,
           });
         } catch (directError) {
-          // Intento 2: descargar la imagen en el servidor y subirla como buffer
-          // (evita CORS / hotlink-protection del sitio externo)
+          // Intento 2: descargar primero (evita WAF/hotlink del sitio) y subir como buffer
           console.log(
             "Subida directa falló, intentando descarga manual…",
             directError instanceof Error ? directError.message : directError
@@ -91,7 +92,8 @@ export async function POST(req: NextRequest) {
               cloudinary.uploader
                 .upload_stream(
                   {
-                    folder: "osmar-products",
+                    upload_preset: UPLOAD_PRESET,
+                    unsigned: true,
                     transformation: [
                       { width: 800, height: 800, crop: "limit" },
                       { quality: "auto", fetch_format: "auto" },
@@ -146,7 +148,8 @@ export async function POST(req: NextRequest) {
       (resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           {
-            folder: "osmar-products",
+            upload_preset: UPLOAD_PRESET,
+            unsigned: true,
             public_id: productCode
               ? `prod_${productCode.replace(/[^a-zA-Z0-9]/g, "_")}`
               : undefined,
