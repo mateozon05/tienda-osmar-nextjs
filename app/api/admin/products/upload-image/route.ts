@@ -56,16 +56,26 @@ async function uploadToCloudinary(
   mimeType: string,
   publicId?: string
 ): Promise<string> {
+  const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+
+  console.log("[upload-image] uploadToCloudinary →", {
+    url,
+    CLOUD_NAME,
+    UPLOAD_PRESET,
+    publicId,
+    bufferSize: buffer.length,
+    mimeType,
+  });
+
   const fd = new FormData();
   fd.append("file", new Blob([new Uint8Array(buffer)], { type: mimeType }), "image.jpg");
   fd.append("upload_preset", UPLOAD_PRESET);
   if (publicId) fd.append("public_id", publicId);
 
-  const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-    method: "POST",
-    body:   fd,
-  });
+  const res  = await fetch(url, { method: "POST", body: fd });
   const data = await res.json() as { secure_url?: string; error?: { message: string } };
+
+  console.log("[upload-image] Cloudinary response →", res.status, JSON.stringify(data));
 
   if (!res.ok || !data.secure_url) {
     throw new Error(data.error?.message ?? "Error al subir a Cloudinary");
