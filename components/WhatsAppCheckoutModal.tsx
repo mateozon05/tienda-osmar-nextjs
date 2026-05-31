@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import type { CartItem } from "@/lib/cart";
+import { useCart } from "@/lib/cart";
 
-const WA_NUMBER  = "541150179447";
-const WA_COLOR   = "#25D366";
-const WA_DARK    = "#1da851";
+const WA_NUMBER = "541150179447";
+const WA_COLOR  = "#25D366";
+const WA_DARK   = "#1da851";
 
 type Delivery = "retiro" | "envio";
 type Payment  = "efectivo" | "transferencia" | "mercadopago";
@@ -17,16 +18,19 @@ interface Props {
 }
 
 const PAYMENT_OPTIONS: { id: Payment; icon: string; label: string; sub: string }[] = [
-  { id: "efectivo",      icon: "💵", label: "Efectivo",         sub: "Al momento de la entrega" },
-  { id: "transferencia", icon: "🏦", label: "Transferencia",    sub: "Te enviamos los datos bancarios" },
-  { id: "mercadopago",   icon: "💳", label: "Mercado Pago",     sub: "Tarjeta, débito o saldo MP" },
+  { id: "efectivo",      icon: "💵", label: "Efectivo",       sub: "Al momento de la entrega" },
+  { id: "transferencia", icon: "🏦", label: "Transferencia",  sub: "Te enviamos los datos bancarios" },
+  { id: "mercadopago",   icon: "💳", label: "Mercado Pago",   sub: "Tarjeta, débito o saldo MP" },
 ];
 
 export default function WhatsAppCheckoutModal({ items, total, onClose }: Props) {
+  const { clearCart } = useCart();
+
   const [delivery, setDelivery] = useState<Delivery | null>(null);
   const [payment,  setPayment]  = useState<Payment  | null>(null);
   const [address,  setAddress]  = useState("");
   const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState("");
 
   const canContinue =
     delivery !== null &&
@@ -36,10 +40,11 @@ export default function WhatsAppCheckoutModal({ items, total, onClose }: Props) 
   async function handleSend() {
     if (!canContinue || loading) return;
     setLoading(true);
+    setError("");
 
     try {
-      // 1. Generar Excel SIPE
-      const res = await fetch("/api/cart/generate-sipe-excel", {
+      // 1. Guardar el pedido en la BD como Nota de Pedido
+      const res = await fetch("/api/cart/submit-whatsapp-order", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -51,26 +56,31 @@ export default function WhatsAppCheckoutModal({ items, total, onClose }: Props) 
             price:        i.price,
             purchaseType: i.purchaseType,
           })),
+          delivery,
+          address,
+          paymentMethod: payment,
         }),
       });
-      const data = await res.json();
 
-      // 2. Armar líneas de productos (código + nombre + cantidad + tipo)
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Error al guardar el pedido");
+
+      // 2. Armar líneas de productos
       const productLines = items
         .map((i) => {
           const typeLabel =
             i.purchaseType === "bulto"
               ? `${i.bulkUnit ?? "bulto"}${i.bulkSize ? ` ×${i.bulkSize}` : ""}`
               : "unidad";
-          return `▸ [${i.code}] ${i.name} × ${i.quantity} (${typeLabel})`;
+          return `▸ [${i.code}] ${i.name}\n   Cantidad: ${i.quantity} ${typeLabel}`;
         })
         .join("\n");
 
-      // 3. Info de entrega y pago
+      // 3. Texto de entrega y pago
       const deliveryText =
         delivery === "retiro"
-          ? "🏪 Retiro en local"
-          : `🚚 Envío a domicilio\n📍 Dirección: ${address}`;
+          ? "🏪 *Retiro en local* (Av. Cazón 464, Tigre)"
+          : `🚚 *Envío a domicilio*\n📍 ${address}`;
 
       const paymentLabels: Record<Payment, string> = {
         efectivo:      "💵 Efectivo",
@@ -78,37 +88,30 @@ export default function WhatsAppCheckoutModal({ items, total, onClose }: Props) 
         mercadopago:   "💳 Mercado Pago",
       };
 
-      // 4. Mensaje completo
+      // 4. Info del cliente (viene de la BD si tiene sesión)
       const clientInfo = data.clientCode
         ? `${data.clientName} (Cód: ${data.clientCode})`
-        : (data.clientName ?? "");
+        : data.clientName ?? "";
 
+      // 5. Mensaje completo
       const message =
         `🛍️ *NUEVO PEDIDO - Distribuidora Osmar*\n\n` +
-        (clientInfo ? `👤 Cliente: ${clientInfo}\n\n` : "") +
+        (clientInfo ? `👤 *Cliente:* ${clientInfo}\n\n` : "") +
         `📦 *Productos:*\n${productLines}\n\n` +
-        `💰 *Total: $${total.toLocaleString("es-AR")}*\n\n` +
+        `💰 *Total estimado: $${total.toLocaleString("es-AR")}*\n\n` +
         `${deliveryText}\n\n` +
-        `💳 *Forma de pago:* ${paymentLabels[payment!]}\n\n` +
-        `📎 _Te adjunto el Excel para importar en SIPE_`;
-
-      // 5. Descargar Excel
-      if (data.excel) {
-        const link    = document.createElement("a");
-        link.href     = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${data.excel}`;
-        link.download = data.filename ?? "pedido-osmar.xlsx";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        await new Promise((r) => setTimeout(r, 600));
-      }
+        `💳 *Forma de pago:* ${paymentLabels[payment!]}`;
 
       // 6. Abrir WhatsApp
       window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`, "_blank");
+
+      // 7. Limpiar carrito y cerrar
+      clearCart();
       onClose();
     } catch (err) {
-      console.error("Error generando pedido:", err);
-      // Fallback sin Excel
+      const msg = err instanceof Error ? err.message : "Hubo un error. Intentá de nuevo.";
+      setError(msg);
+      // Fallback: abrir WhatsApp igual sin guardar en BD
       const lines = items
         .map((i) => `• ${i.quantity}× ${i.name} — $${(i.price * i.quantity).toLocaleString("es-AR")}`)
         .join("\n");
@@ -118,6 +121,7 @@ export default function WhatsAppCheckoutModal({ items, total, onClose }: Props) 
         )}`,
         "_blank"
       );
+      clearCart();
       onClose();
     } finally {
       setLoading(false);
@@ -141,16 +145,13 @@ export default function WhatsAppCheckoutModal({ items, total, onClose }: Props) 
         <div
           onClick={(e) => e.stopPropagation()}
           style={{
-            width: "100%",
-            maxWidth: 480,
+            width: "100%", maxWidth: 480,
             margin: "0 auto",
             background: "#fff",
             borderRadius: "20px 20px 0 0",
             boxShadow: "0 -8px 40px rgba(0,0,0,.18)",
-            display: "flex",
-            flexDirection: "column",
-            maxHeight: "92dvh",
-            overflow: "hidden",
+            display: "flex", flexDirection: "column",
+            maxHeight: "92dvh", overflow: "hidden",
           }}
         >
           {/* Header */}
@@ -182,7 +183,18 @@ export default function WhatsAppCheckoutModal({ items, total, onClose }: Props) 
           {/* Scrollable body */}
           <div style={{ overflowY: "auto", padding: "20px", flex: 1 }}>
 
-            {/* ── ENTREGA ────────────────────── */}
+            {/* Error */}
+            {error && (
+              <div style={{
+                background: "#fef2f2", border: "1px solid #fca5a5",
+                color: "#b91c1c", padding: "10px 14px",
+                borderRadius: 10, marginBottom: 16, fontSize: 13,
+              }}>
+                {error}
+              </div>
+            )}
+
+            {/* ── ENTREGA ── */}
             <div style={{ marginBottom: 22 }}>
               <div style={{
                 fontSize: ".7rem", fontWeight: 700, color: "#999",
@@ -198,8 +210,7 @@ export default function WhatsAppCheckoutModal({ items, total, onClose }: Props) 
                       key={opt}
                       onClick={() => setDelivery(opt)}
                       style={{
-                        padding: "14px 12px",
-                        borderRadius: 14,
+                        padding: "14px 12px", borderRadius: 14,
                         border: `2px solid ${sel ? WA_COLOR : "#e5e5e5"}`,
                         background: sel ? "#f0fdf4" : "#fff",
                         cursor: "pointer", textAlign: "left",
@@ -239,7 +250,7 @@ export default function WhatsAppCheckoutModal({ items, total, onClose }: Props) 
               )}
             </div>
 
-            {/* ── PAGO ───────────────────────── */}
+            {/* ── PAGO ── */}
             <div style={{ marginBottom: 22 }}>
               <div style={{
                 fontSize: ".7rem", fontWeight: 700, color: "#999",
@@ -256,30 +267,24 @@ export default function WhatsAppCheckoutModal({ items, total, onClose }: Props) 
                       onClick={() => setPayment(opt.id)}
                       style={{
                         display: "flex", alignItems: "center", gap: 12,
-                        padding: "12px 14px",
-                        borderRadius: 14,
+                        padding: "12px 14px", borderRadius: 14,
                         border: `2px solid ${sel ? WA_COLOR : "#e5e5e5"}`,
                         background: sel ? "#f0fdf4" : "#fff",
                         cursor: "pointer", textAlign: "left",
                         transition: "border-color .15s, background .15s",
                       }}
                     >
-                      {/* Radio circle */}
                       <div style={{
                         width: 18, height: 18, borderRadius: "50%",
                         border: `2px solid ${sel ? WA_COLOR : "#ccc"}`,
                         display: "flex", alignItems: "center", justifyContent: "center",
                         flexShrink: 0,
                       }}>
-                        {sel && (
-                          <div style={{ width: 9, height: 9, borderRadius: "50%", background: WA_COLOR }} />
-                        )}
+                        {sel && <div style={{ width: 9, height: 9, borderRadius: "50%", background: WA_COLOR }} />}
                       </div>
                       <span style={{ fontSize: "1.25rem", flexShrink: 0 }}>{opt.icon}</span>
                       <div>
-                        <div style={{ fontWeight: 700, fontSize: ".88rem", color: "#111" }}>
-                          {opt.label}
-                        </div>
+                        <div style={{ fontWeight: 700, fontSize: ".88rem", color: "#111" }}>{opt.label}</div>
                         <div style={{ fontSize: ".72rem", color: "#888" }}>{opt.sub}</div>
                       </div>
                     </button>
@@ -288,7 +293,7 @@ export default function WhatsAppCheckoutModal({ items, total, onClose }: Props) 
               </div>
             </div>
 
-            {/* ── RESUMEN ────────────────────── */}
+            {/* ── RESUMEN ── */}
             <div style={{
               background: "#f8f8f8", borderRadius: 14, padding: "14px 16px",
               display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -302,7 +307,7 @@ export default function WhatsAppCheckoutModal({ items, total, onClose }: Props) 
             </div>
           </div>
 
-          {/* ── FOOTER / BOTÓN ─────────────── */}
+          {/* Footer */}
           <div style={{ padding: "16px 20px 20px", flexShrink: 0, borderTop: "1px solid #f0f0f0" }}>
             <button
               onClick={handleSend}
@@ -310,8 +315,7 @@ export default function WhatsAppCheckoutModal({ items, total, onClose }: Props) 
               style={{
                 width: "100%",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-                padding: "15px",
-                borderRadius: 14, border: "none",
+                padding: "15px", borderRadius: 14, border: "none",
                 background: canContinue && !loading ? WA_COLOR : "#e5e5e5",
                 color: canContinue && !loading ? "#fff" : "#aaa",
                 fontWeight: 700, fontSize: ".95rem",
@@ -319,25 +323,21 @@ export default function WhatsAppCheckoutModal({ items, total, onClose }: Props) 
                 transition: "background .15s",
               }}
               onMouseEnter={(e) => {
-                if (canContinue && !loading)
-                  (e.currentTarget as HTMLButtonElement).style.background = WA_DARK;
+                if (canContinue && !loading) (e.currentTarget as HTMLButtonElement).style.background = WA_DARK;
               }}
               onMouseLeave={(e) => {
-                if (canContinue && !loading)
-                  (e.currentTarget as HTMLButtonElement).style.background = WA_COLOR;
+                if (canContinue && !loading) (e.currentTarget as HTMLButtonElement).style.background = WA_COLOR;
               }}
             >
               {loading ? (
                 <>
                   <span style={{
                     width: 18, height: 18,
-                    border: "2.5px solid rgba(255,255,255,.4)",
-                    borderTopColor: "#fff",
-                    borderRadius: "50%",
-                    display: "inline-block",
+                    border: "2.5px solid rgba(255,255,255,.4)", borderTopColor: "#fff",
+                    borderRadius: "50%", display: "inline-block",
                     animation: "waSpinM .7s linear infinite",
                   }} />
-                  Preparando pedido...
+                  Guardando pedido...
                 </>
               ) : (
                 <>
@@ -349,7 +349,7 @@ export default function WhatsAppCheckoutModal({ items, total, onClose }: Props) 
               )}
             </button>
             <p style={{ fontSize: ".72rem", color: "#aaa", textAlign: "center", marginTop: 8 }}>
-              Se descarga el Excel y se abre WhatsApp automáticamente
+              Tu pedido queda registrado y se abre WhatsApp automáticamente
             </p>
           </div>
         </div>

@@ -138,6 +138,21 @@ export default function PickingNoteDetailPage() {
     await patch({ status: s });
   }
 
+  async function handleDownloadExcel() {
+    setSaving(true);
+    setError("");
+    const res  = await fetch(`/api/admin/picking-notes/${id}/export-sipe`);
+    const data = await res.json();
+    if (!res.ok) { setError(data.error ?? "Error al generar Excel"); setSaving(false); return; }
+    const link    = document.createElement("a");
+    link.href     = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${data.excel}`;
+    link.download = data.filename ?? `${note?.number}-SIPE.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setSaving(false);
+  }
+
   async function handleToOrder() {
     setSaving(true);
     setError("");
@@ -188,6 +203,14 @@ export default function PickingNoteDetailPage() {
           </p>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button
+            className="au-btn"
+            onClick={handleDownloadExcel}
+            disabled={saving}
+            style={{ background: "#16a34a" }}
+          >
+            📥 Descargar Excel SIPE
+          </button>
           <button className="au-btn" onClick={handlePrint} disabled={saving} style={{ background: "#374151" }}>
             🖨️ Imprimir Nota
           </button>

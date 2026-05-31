@@ -59,6 +59,18 @@ function fmtDate(s: string) {
   return new Date(s).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
+async function downloadExcel(noteId: number, noteNumber: string) {
+  const res  = await fetch(`/api/admin/picking-notes/${noteId}/export-sipe`);
+  const data = await res.json();
+  if (!res.ok) return;
+  const link    = document.createElement("a");
+  link.href     = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${data.excel}`;
+  link.download = data.filename ?? `${noteNumber}-SIPE.xlsx`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 export default function PickingNotesPage() {
   const [notes, setNotes]       = useState<PickingNote[]>([]);
   const [total, setTotal]       = useState(0);
@@ -200,13 +212,27 @@ export default function PickingNotesPage() {
                     )}
                   </td>
                   <td>
-                    <Link
-                      href={`/picking-notes/${note.id}`}
-                      className="au-btn"
-                      style={{ fontSize: 13, padding: "4px 14px" }}
-                    >
-                      Ver →
-                    </Link>
+                    <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                      <button
+                        onClick={() => downloadExcel(note.id, note.number)}
+                        title="Descargar Excel SIPE"
+                        style={{
+                          background: "#dcfce7", color: "#16a34a",
+                          border: "none", borderRadius: 8,
+                          padding: "4px 8px", cursor: "pointer",
+                          fontSize: 14, lineHeight: 1,
+                        }}
+                      >
+                        📥
+                      </button>
+                      <Link
+                        href={`/picking-notes/${note.id}`}
+                        className="au-btn"
+                        style={{ fontSize: 13, padding: "4px 14px" }}
+                      >
+                        Ver →
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}
