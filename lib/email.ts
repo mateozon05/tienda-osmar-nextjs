@@ -117,6 +117,53 @@ export async function notifyUserRejected(user: {
   }
 }
 
+// ── Notify admin: new WhatsApp order (Picking Note) ──────────────
+export async function notifyNewWhatsAppOrder(note: {
+  id: number;
+  number: string;
+  clientName: string;
+  clientCode?: string | null;
+  total: number;
+  itemCount: number;
+  delivery: string;   // "Retiro en local" | "Envío a domicilio: ..."
+  payment: string;    // "efectivo" | "transferencia" | "mercadopago"
+}) {
+  const resend = getResend();
+  if (!resend) return;
+
+  const paymentLabel: Record<string, string> = {
+    efectivo:      "💵 Efectivo",
+    transferencia: "🏦 Transferencia",
+    mercadopago:   "💳 Mercado Pago",
+  };
+
+  try {
+    await resend.emails.send({
+      from: FROM_ADMIN,
+      to: ADMIN_EMAIL,
+      subject: `🛍️ Nuevo pedido WhatsApp ${note.number} — $${note.total.toLocaleString("es-AR")}`,
+      html: `<div style="${BASE_STYLES}">
+        ${header(`Nuevo pedido ${note.number}`, "#25D366")}
+        ${body(`
+          <p style="color:#6B7280;margin-bottom:16px;">Entró un nuevo pedido por WhatsApp. Ya quedó registrado como Nota de Pedido:</p>
+          <table style="width:100%;border-collapse:collapse;">
+            <tr><td style="padding:8px;color:#6B7280;font-size:13px;">Nota:</td><td style="padding:8px;font-weight:600;">${note.number}</td></tr>
+            <tr><td style="padding:8px;color:#6B7280;font-size:13px;">Cliente:</td><td style="padding:8px;">${note.clientName}${note.clientCode ? ` (Cód: ${note.clientCode})` : ""}</td></tr>
+            <tr><td style="padding:8px;color:#6B7280;font-size:13px;">Productos:</td><td style="padding:8px;">${note.itemCount} item${note.itemCount !== 1 ? "s" : ""}</td></tr>
+            <tr><td style="padding:8px;color:#6B7280;font-size:13px;">Entrega:</td><td style="padding:8px;">${note.delivery}</td></tr>
+            <tr><td style="padding:8px;color:#6B7280;font-size:13px;">Pago:</td><td style="padding:8px;">${paymentLabel[note.payment] ?? note.payment}</td></tr>
+            <tr><td style="padding:8px;color:#6B7280;font-size:13px;">Total:</td><td style="padding:8px;font-weight:600;color:#25D366;font-size:18px;">$${note.total.toLocaleString("es-AR")}</td></tr>
+          </table>
+          ${btn("Ver Nota de Pedido →", `${STORE_URL}/picking-notes/${note.id}`, "#25D366")}
+        `)}
+        ${FOOTER_HTML}
+      </div>`,
+    });
+  } catch (err) {
+    console.error("[email] notifyNewWhatsAppOrder:", err);
+  }
+}
+
 // ── Notify admin: new order ──────────────────────────────────────
 export async function notifyNewOrder(order: {
   id: number; userName: string; total: number; itemCount: number;
