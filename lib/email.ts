@@ -6,10 +6,13 @@ function getResend(): Resend | null {
   return new Resend(process.env.RESEND_API_KEY);
 }
 
-// Use onboarding@resend.dev until domain is verified at resend.com/domains
-// Once distribuidoraosmar.com is verified, change to noreply@distribuidoraosmar.com
-const FROM_ADMIN = process.env.RESEND_FROM ?? "Tienda Osmar <onboarding@resend.dev>";
-const FROM_USER  = process.env.RESEND_FROM ?? "Distribuidora Osmar <onboarding@resend.dev>";
+// Remitente: dominio propio verificado en Resend (distribuidoraosmar.com).
+// IMPORTANTE: los emails solo se entregan una vez que el dominio figura
+// como "Verified" en resend.com/domains. Hasta entonces Resend rechaza el
+// envío (se captura en el try/catch — no rompe el flujo, pero no llega).
+// Se puede sobreescribir sin redeploy con la env var RESEND_FROM.
+const FROM_ADMIN  = process.env.RESEND_FROM ?? "Distribuidora Osmar <notificaciones@distribuidoraosmar.com>";
+const FROM_USER   = process.env.RESEND_FROM ?? "Distribuidora Osmar <notificaciones@distribuidoraosmar.com>";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "ventas@distribuidoraosmar.com";
 const STORE_URL   = process.env.NEXT_PUBLIC_URL ?? "https://tienda-osmar-nextjs.vercel.app";
 
