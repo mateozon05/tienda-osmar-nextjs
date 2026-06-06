@@ -32,6 +32,7 @@ const ADMIN_PATHS = [
   "/api/admin/audit",
   "/api/admin/stats",
   "/api/admin/products",
+  "/api/admin/price-lists",  // necesaria para cargar dropdowns en /users y /clients
 ];
 
 // Accessible ONLY to superadmin
@@ -41,7 +42,6 @@ const SUPERADMIN_PATHS = [
   "/price-lists",
   "/api/admin/admins",
   "/api/admin/settings",
-  "/api/admin/price-lists",
 ];
 
 // Respuesta de auth fallida:
