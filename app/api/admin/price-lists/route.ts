@@ -9,8 +9,9 @@ export async function GET() {
   }
 
   const priceLists = await prisma.priceList.findMany({
-    orderBy: { name: "asc" },
-    select: { id: true, name: true, discountPercentage: true, isDefault: true },
+    where: { isActive: true },
+    orderBy: [{ type: "asc" }, { name: "asc" }],
+    select: { id: true, name: true, type: true, discountPercentage: true, isDefault: true, isActive: true },
   });
 
   return NextResponse.json({ priceLists });

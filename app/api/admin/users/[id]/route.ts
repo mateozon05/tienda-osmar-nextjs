@@ -19,15 +19,17 @@ export async function PATCH(
   }
 
   const body = await req.json();
-  const { status, priceListId, salespersonId } = body as {
+  const { status, priceListId, saphirusPriceListId, salespersonId } = body as {
     status?: "pending" | "approved" | "rejected";
     priceListId?: number | null;
+    saphirusPriceListId?: number | null;
     salespersonId?: number | null;
   };
 
   const data: Record<string, unknown> = {};
   if (status !== undefined) data.status = status;
   if (priceListId !== undefined) data.priceListId = priceListId;
+  if (saphirusPriceListId !== undefined) data.saphirusPriceListId = saphirusPriceListId;
   if (salespersonId !== undefined) data.salespersonId = salespersonId;
 
   if (Object.keys(data).length === 0) {
@@ -39,8 +41,9 @@ export async function PATCH(
     data,
     select: {
       id: true, name: true, email: true, status: true,
-      priceList:   { select: { id: true, name: true, discountPercentage: true } },
-      salesperson: { select: { id: true, name: true } },
+      priceList:         { select: { id: true, name: true, type: true, discountPercentage: true } },
+      saphirusPriceList: { select: { id: true, name: true, type: true } },
+      salesperson:       { select: { id: true, name: true } },
     },
   });
 

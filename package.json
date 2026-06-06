@@ -19,7 +19,8 @@
     "process:images": "npx tsx --env-file=.env scripts/process-product-images.ts",
     "import:clients": "npx tsx --env-file=.env scripts/import-clients-sipe.ts",
     "import:salespersons": "npx tsx --env-file=.env scripts/import-salespersons-sipe.ts",
-    "import:orders": "npx tsx --env-file=.env scripts/import-orders-sipe.ts"
+    "import:orders": "npx tsx --env-file=.env scripts/import-orders-sipe.ts",
+    "import:prices": "npx tsx --env-file=.env scripts/import-price-lists.ts"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"

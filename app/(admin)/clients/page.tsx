@@ -16,7 +16,8 @@ interface Client {
   status: string;
   lastLogin: string | null;
   createdAt: string;
-  priceList: { id: number; name: string } | null;
+  priceList: { id: number; name: string; type: string } | null;
+  saphirusPriceList: { id: number; name: string; type: string } | null;
   salesperson: { id: number; name: string } | null;
   _count: { orders: number };
 }
@@ -24,6 +25,7 @@ interface Client {
 interface PriceList {
   id: number;
   name: string;
+  type: string;
 }
 
 interface SalespersonOption {
@@ -81,11 +83,15 @@ interface DetailModalProps {
   onUpdated: (c: Client) => void;
 }
 function DetailModal({ client, priceLists, salespersons, onClose, onUpdated }: DetailModalProps) {
-  const [status,        setStatus]        = useState(client.status);
-  const [priceListId,   setPriceListId]   = useState(client.priceList?.id?.toString() ?? "");
-  const [salespersonId, setSalespersonId] = useState(client.salesperson?.id?.toString() ?? "");
+  const [status,              setStatus]              = useState(client.status);
+  const [priceListId,         setPriceListId]         = useState(client.priceList?.id?.toString() ?? "");
+  const [saphirusPriceListId, setSaphirusPriceListId] = useState(client.saphirusPriceList?.id?.toString() ?? "");
+  const [salespersonId,       setSalespersonId]       = useState(client.salesperson?.id?.toString() ?? "");
   const [saving, setSaving] = useState(false);
   const [msg,    setMsg]    = useState("");
+
+  const generalLists  = priceLists.filter((pl) => pl.type === "general");
+  const saphirusLists = priceLists.filter((pl) => pl.type === "saphirus");
 
   async function handleSave() {
     setSaving(true);
@@ -96,15 +102,17 @@ function DetailModal({ client, priceLists, salespersons, onClose, onUpdated }: D
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status,
-          priceListId:   priceListId   || null,
-          salespersonId: salespersonId || null,
+          priceListId:         priceListId         || null,
+          saphirusPriceListId: saphirusPriceListId || null,
+          salespersonId:       salespersonId       || null,
         }),
       });
       if (!res.ok) throw new Error("Error al guardar");
       const updated = await res.json();
-      const pl = priceLists.find((p) => p.id === updated.priceListId) ?? null;
-      const sp = salespersons.find((s) => s.id === updated.salespersonId) ?? null;
-      onUpdated({ ...client, status: updated.status, priceList: pl, salesperson: sp });
+      const pl  = priceLists.find((p) => p.id === updated.priceListId)         ?? null;
+      const spl = priceLists.find((p) => p.id === updated.saphirusPriceListId) ?? null;
+      const sp  = salespersons.find((s) => s.id === updated.salespersonId)     ?? null;
+      onUpdated({ ...client, status: updated.status, priceList: pl, saphirusPriceList: spl, salesperson: sp });
       setMsg("✅ Guardado");
       setTimeout(onClose, 800);
     } catch {
@@ -190,14 +198,27 @@ function DetailModal({ client, priceLists, salespersons, onClose, onUpdated }: D
               </select>
             </div>
             <div className="cli-modal-field">
-              <label className="cli-modal-label">Lista de precios</label>
+              <label className="cli-modal-label">Lista general</label>
               <select
                 className="cli-modal-select"
                 value={priceListId}
                 onChange={(e) => setPriceListId(e.target.value)}
               >
-                <option value="">— Sin lista asignada (precio general) —</option>
-                {priceLists.map((pl) => (
+                <option value="">— Sin lista general —</option>
+                {generalLists.map((pl) => (
+                  <option key={pl.id} value={pl.id}>{pl.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="cli-modal-field">
+              <label className="cli-modal-label">Lista Saphirus</label>
+              <select
+                className="cli-modal-select"
+                value={saphirusPriceListId}
+                onChange={(e) => setSaphirusPriceListId(e.target.value)}
+              >
+                <option value="">— Sin lista Saphirus —</option>
+                {saphirusLists.map((pl) => (
                   <option key={pl.id} value={pl.id}>{pl.name}</option>
                 ))}
               </select>
@@ -362,9 +383,16 @@ export default function ClientsPage() {
                 </td>
                 <td>{c.city || "—"}</td>
                 <td>
-                  {c.priceList
-                    ? <span className="cli-pricelist">{c.priceList.name}</span>
-                    : <span className="cli-no-pricelist">General</span>}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                    {c.priceList
+                      ? <span className="cli-pricelist">{c.priceList.name}</span>
+                      : <span className="cli-no-pricelist">—</span>}
+                    {c.saphirusPriceList && (
+                      <span className="cli-pricelist" style={{ fontSize: 11, opacity: 0.8 }}>
+                        🟢 {c.saphirusPriceList.name}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td>
                   {c.salesperson

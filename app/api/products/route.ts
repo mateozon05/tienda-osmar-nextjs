@@ -8,12 +8,13 @@ function applyPrices(
     price: number;
     unitPrice: number | null;
     bulkPrice: number | null;
-    productPrices?: Array<{ customPrice: number | null; customBulkPrice: number | null }>;
+    isSaphirus?: boolean;
+    productPrices?: Array<{ customPrice: number | null; customBulkPrice: number | null; priceListId: number }>;
     [key: string]: unknown;
   },
   discountPct: number | null | undefined,
 ): typeof product {
-  // 1. Check for custom fixed price override
+  // 1. Check for custom fixed price override (from any matched price list)
   const custom = product.productPrices?.[0];
   if (custom) {
     return {
@@ -53,6 +54,7 @@ export async function GET(req: NextRequest) {
 
   // ── Resolve price list for current user ──────────────
   let priceListId: number | null = null;
+  let saphirusPriceListId: number | null = null;
   let discountPct: number | null = null;
 
   const session = await getSession();
@@ -61,12 +63,18 @@ export async function GET(req: NextRequest) {
       where: { id: session.userId },
       select: {
         status: true,
-        priceList: { select: { id: true, discountPercentage: true } },
+        priceList:         { select: { id: true, discountPercentage: true } },
+        saphirusPriceList: { select: { id: true } },
       },
     });
-    if (user?.status === "approved" && user.priceList) {
-      priceListId = user.priceList.id;
-      discountPct = user.priceList.discountPercentage ?? null;
+    if (user?.status === "approved") {
+      if (user.priceList) {
+        priceListId = user.priceList.id;
+        discountPct = user.priceList.discountPercentage ?? null;
+      }
+      if (user.saphirusPriceList) {
+        saphirusPriceListId = user.saphirusPriceList.id;
+      }
     }
   }
 
@@ -93,6 +101,8 @@ export async function GET(req: NextRequest) {
     sort === "price_desc" ? { price: "desc" as const } :
     { name: "asc" as const };
 
+  const hasPersonalPrices = priceListId !== null || saphirusPriceListId !== null;
+
   const [rawProducts, total] = await Promise.all([
     prisma.product.findMany({
       where,
@@ -101,21 +111,32 @@ export async function GET(req: NextRequest) {
       take: limit,
       include: {
         category: true,
-        ...(priceListId && {
-          productPrices: { where: { priceListId } },
+        // Include product prices for both lists; each product only has prices for
+        // its own type (general or Saphirus), so we filter by both and let
+        // applyPrices pick the first match.
+        ...(hasPersonalPrices && {
+          productPrices: {
+            where: {
+              OR: [
+                ...(priceListId         ? [{ priceListId }]         : []),
+                ...(saphirusPriceListId ? [{ priceListId: saphirusPriceListId }] : []),
+              ],
+            },
+          },
         }),
       },
     }),
     prisma.product.count({ where }),
   ]);
 
-  // Apply personalized prices
+  // Apply personalized prices — for each product, only the matching list price
+  // will be present in productPrices (general products have no Saphirus price and vice versa)
   const products = rawProducts.map(p => applyPrices(p as Parameters<typeof applyPrices>[0], discountPct));
 
   const res = NextResponse.json({ products, total, page, limit });
 
   // Cache-Control: público (guest) o privado (usuario con precio personalizado)
-  if (session && priceListId) {
+  if (session && hasPersonalPrices) {
     res.headers.set("Cache-Control", "private, no-cache");
   } else {
     res.headers.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=60");

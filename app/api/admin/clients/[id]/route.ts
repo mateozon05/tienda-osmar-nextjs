@@ -16,9 +16,10 @@ export async function PATCH(
   const body = await req.json();
 
   const data: Record<string, unknown> = {};
-  if ("status"        in body) data.status        = body.status;
-  if ("priceListId"   in body) data.priceListId   = body.priceListId   ? parseInt(body.priceListId)   : null;
-  if ("salespersonId" in body) data.salespersonId = body.salespersonId ? parseInt(body.salespersonId) : null;
+  if ("status"              in body) data.status              = body.status;
+  if ("priceListId"         in body) data.priceListId         = body.priceListId         ? parseInt(body.priceListId)         : null;
+  if ("saphirusPriceListId" in body) data.saphirusPriceListId = body.saphirusPriceListId ? parseInt(body.saphirusPriceListId) : null;
+  if ("salespersonId"       in body) data.salespersonId       = body.salespersonId       ? parseInt(body.salespersonId)       : null;
   if ("name"          in body) data.name          = body.name;
   if ("company"       in body) data.company       = body.company  || null;
   if ("phone"         in body) data.phone         = body.phone    || null;

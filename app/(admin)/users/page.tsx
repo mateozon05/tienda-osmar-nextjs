@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 
-type PriceList      = { id: number; name: string; discountPercentage: number | null };
+type PriceList      = { id: number; name: string; type: string; discountPercentage: number | null };
 type SalespersonOpt = { id: number; name: string };
 type UserRow = {
   id: number;
@@ -15,7 +15,8 @@ type UserRow = {
   status: string;
   createdAt: string;
   lastLogin: string | null;
-  priceList: { id: number; name: string; discountPercentage: number | null } | null;
+  priceList: { id: number; name: string; type: string; discountPercentage: number | null } | null;
+  saphirusPriceList: { id: number; name: string; type: string } | null;
   salesperson: { id: number; name: string } | null;
 };
 
@@ -98,7 +99,7 @@ export default function AdminUsersPage() {
 
   async function patchUser(
     id: number,
-    patch: { status?: string; priceListId?: number | null; salespersonId?: number | null }
+    patch: { status?: string; priceListId?: number | null; saphirusPriceListId?: number | null; salespersonId?: number | null }
   ) {
     setSaving(id);
     try {
@@ -109,14 +110,22 @@ export default function AdminUsersPage() {
       });
       if (res.ok) {
         const { user } = await res.json();
-        setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...user } : u)));
+        setUsers((prev) => prev.map((u) => (u.id === id ? {
+          ...u,
+          status:            user.status            ?? u.status,
+          priceList:         user.priceList         ?? u.priceList,
+          saphirusPriceList: user.saphirusPriceList ?? u.saphirusPriceList,
+          salesperson:       user.salesperson       ?? u.salesperson,
+        } : u)));
       }
     } finally {
       setSaving(null);
     }
   }
 
-  const pendingCount = users.filter((u) => u.status === "pending").length;
+  const generalLists  = priceLists.filter((pl) => pl.type === "general");
+  const saphirusLists = priceLists.filter((pl) => pl.type === "saphirus");
+  const pendingCount  = users.filter((u) => u.status === "pending").length;
   const totalPages   = Math.ceil(total / LIMIT);
 
   return (
@@ -181,7 +190,8 @@ export default function AdminUsersPage() {
                   <th>Usuario</th>
                   <th>Empresa</th>
                   <th>Estado</th>
-                  <th>Lista de precios</th>
+                  <th>Lista general</th>
+                  <th>Lista Saphirus</th>
                   <th>Vendedor</th>
                   <th>Registro</th>
                   <th className="au-th-actions">Acciones</th>
@@ -189,7 +199,7 @@ export default function AdminUsersPage() {
               </thead>
               <tbody>
                 {users.length === 0 && (
-                  <tr><td colSpan={7} className="au-empty">No se encontraron usuarios</td></tr>
+                  <tr><td colSpan={8} className="au-empty">No se encontraron usuarios</td></tr>
                 )}
                 {users.map((user) => (
                   <tr key={user.id} className={`au-row${user.status === "pending" ? " au-row--pending" : ""}`}>
@@ -215,10 +225,26 @@ export default function AdminUsersPage() {
                         }}
                       >
                         <option value="">Sin lista</option>
-                        {priceLists.map((pl) => (
+                        {generalLists.map((pl) => (
                           <option key={pl.id} value={pl.id}>
                             {pl.name}{pl.discountPercentage ? ` (${pl.discountPercentage}%)` : ""}
                           </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <select
+                        className="au-pl-select"
+                        value={user.saphirusPriceList?.id ?? ""}
+                        disabled={saving === user.id || user.role !== "customer"}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          patchUser(user.id, { saphirusPriceListId: val ? parseInt(val) : null });
+                        }}
+                      >
+                        <option value="">Sin Saphirus</option>
+                        {saphirusLists.map((pl) => (
+                          <option key={pl.id} value={pl.id}>{pl.name}</option>
                         ))}
                       </select>
                     </td>

@@ -38,6 +38,7 @@ const ADMIN_PATHS = [
 const SUPERADMIN_PATHS = [
   "/admins",
   "/settings",
+  "/price-lists",
   "/api/admin/admins",
   "/api/admin/settings",
   "/api/admin/price-lists",

@@ -35,8 +35,9 @@ export async function GET(req: NextRequest) {
         id: true, name: true, email: true, clientCode: true,
         company: true, phone: true, role: true, status: true,
         lastLogin: true, createdAt: true,
-        priceList:   { select: { id: true, name: true, discountPercentage: true } },
-        salesperson: { select: { id: true, name: true } },
+        priceList:         { select: { id: true, name: true, type: true, discountPercentage: true } },
+        saphirusPriceList: { select: { id: true, name: true, type: true } },
+        salesperson:       { select: { id: true, name: true } },
       },
       orderBy: [{ status: "asc" }, { createdAt: "desc" }],   // pending first
       skip: (page - 1) * limit,

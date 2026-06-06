@@ -10,10 +10,13 @@ datasource db {
 model PriceList {
   id                 Int            @id @default(autoincrement())
   name               String         @unique
+  type               String         @default("general")   // "general" | "saphirus"
   description        String?
   discountPercentage Float?         // null = sin descuento / usar precios custom
   isDefault          Boolean        @default(false)
+  isActive           Boolean        @default(true)
   users              User[]
+  usersSaphirus      User[]         @relation("SaphirusPriceList")
   productPrices      ProductPrice[]
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
@@ -62,10 +65,12 @@ model User {
   taxId              String?                                  // CUIT / DNI
   role               String              @default("customer")
   status             String              @default("approved") // 'pending' | 'approved' | 'rejected' | 'inactive'
-  priceListId        Int?
-  salespersonId      Int?                                     // Vendedor asignado
-  priceList          PriceList?          @relation(fields: [priceListId], references: [id])
-  salesperson        Salesperson?        @relation(fields: [salespersonId], references: [id], onDelete: SetNull)
+  priceListId            Int?
+  saphirusPriceListId    Int?                                     // Lista Saphirus separada
+  salespersonId          Int?                                     // Vendedor asignado
+  priceList              PriceList?          @relation(fields: [priceListId], references: [id])
+  saphirusPriceList      PriceList?          @relation("SaphirusPriceList", fields: [saphirusPriceListId], references: [id])
+  salesperson            Salesperson?        @relation(fields: [salespersonId], references: [id], onDelete: SetNull)
   salespersonClients ClientSalesperson[]
   orders             Order[]
   pickingNotes       PickingNote[]
@@ -96,6 +101,7 @@ model Product {
   price         Float
   stock         Int            @default(0)
   active        Boolean        @default(true)
+  isSaphirus    Boolean        @default(false)
   imageUrl      String?
   bulkUnit      String?
   bulkSize      Int?
@@ -115,6 +121,7 @@ model Product {
   @@index([stock])
   @@index([price])
   @@index([name])
+  @@index([isSaphirus])
   @@index([active, categoryId])
   @@index([active, stock])
 }
