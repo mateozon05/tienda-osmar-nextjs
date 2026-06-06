@@ -43,6 +43,28 @@ const SUPERADMIN_PATHS = [
   "/api/admin/price-lists",
 ];
 
+// Respuesta de auth fallida:
+//  - Para rutas /api/* → JSON con status (el cliente hace fetch y espera JSON).
+//    Redirigir a /login (HTML) acá causa "Unexpected token '<'" al hacer res.json().
+//  - Para páginas → redirect al login (comportamiento correcto en navegación).
+function authFail(
+  request: NextRequest,
+  opts: { status: number; redirectTo: string; clearCookie?: boolean }
+) {
+  const isApi = request.nextUrl.pathname.startsWith("/api/");
+  if (isApi) {
+    const res = NextResponse.json(
+      { error: opts.status === 401 ? "No autorizado" : "Sin permisos" },
+      { status: opts.status }
+    );
+    if (opts.clearCookie) res.cookies.set({ name: "osmar-token", value: "", maxAge: 0, path: "/" });
+    return res;
+  }
+  const res = NextResponse.redirect(new URL(opts.redirectTo, request.url));
+  if (opts.clearCookie) res.cookies.set({ name: "osmar-token", value: "", maxAge: 0, path: "/" });
+  return res;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -69,7 +91,7 @@ export async function middleware(request: NextRequest) {
   // ── Require auth ─────────────────────────────────────────────
   const token = request.cookies.get("osmar-token")?.value;
   if (!token) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return authFail(request, { status: 401, redirectTo: "/login" });
   }
 
   // ── Decode token + role-based access ─────────────────────────
@@ -94,18 +116,16 @@ export async function middleware(request: NextRequest) {
 
     // Customers → back to shop
     if ((isAdminPath || isSuperAdminPath) && !isAdmin) {
-      return NextResponse.redirect(new URL("/", request.url));
+      return authFail(request, { status: 403, redirectTo: "/" });
     }
 
     // Admin (non-super) trying to access superadmin-only paths → dashboard
     if (isSuperAdminPath && !isSuperAdmin) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return authFail(request, { status: 403, redirectTo: "/dashboard" });
     }
   } catch {
     // Expired or invalid token
-    const res = NextResponse.redirect(new URL("/login", request.url));
-    res.cookies.set({ name: "osmar-token", value: "", maxAge: 0, path: "/" });
-    return res;
+    return authFail(request, { status: 401, redirectTo: "/login", clearCookie: true });
   }
 
   return NextResponse.next();

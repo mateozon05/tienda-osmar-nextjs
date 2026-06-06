@@ -70,6 +70,11 @@ export default function AdminUsersPage() {
         fetch("/api/admin/salespersons?status=active"),
       ]);
 
+      // Sesión expirada → volver al login
+      if (uRes.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (!uRes.ok) throw new Error(`Error ${uRes.status} al cargar usuarios`);
 
       const uData = await uRes.json();
