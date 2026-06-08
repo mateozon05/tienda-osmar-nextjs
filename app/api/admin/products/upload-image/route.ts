@@ -4,8 +4,11 @@ import { prisma } from "@/lib/prisma";
 
 // Usamos la REST API de Cloudinary directamente con preset unsigned.
 // No se necesita API key ni API secret — solo cloud_name y upload_preset.
-const CLOUD_NAME    = process.env.CLOUDINARY_CLOUD_NAME ?? "dq1wgq8ad";
-const UPLOAD_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET ?? "osmar-products-unsigned";
+// Sanitizamos el env var: Vercel puede inyectar BOM (﻿) y CRLF al copiar/pegar.
+const CLOUD_NAME    = (process.env.CLOUDINARY_CLOUD_NAME ?? "")
+  .replace(/^﻿/, "").trim() || "dq1wgq8ad";
+const UPLOAD_PRESET = (process.env.CLOUDINARY_UPLOAD_PRESET ?? "")
+  .replace(/^﻿/, "").trim() || "osmar-products-unsigned";
 
 /**
  * Descarga una imagen desde una URL externa como Buffer.
