@@ -37,95 +37,77 @@ export default function WhatsAppCheckoutModal({ items, total, onClose }: Props) 
     payment  !== null &&
     (delivery === "retiro" || address.trim() !== "");
 
-  async function handleSend() {
+  // ── Armar URL de WhatsApp (sin awaits) ──────────────────────────────────────
+  function buildWhatsAppUrl(): string {
+    const productLines = items
+      .map((i) => {
+        const typeLabel =
+          i.purchaseType === "bulto"
+            ? `${i.bulkUnit ?? "bulto"}${i.bulkSize ? ` ×${i.bulkSize}` : ""}`
+            : "unidad";
+        return `▸ [${i.code}] ${i.name}\n   Cantidad: ${i.quantity} ${typeLabel}`;
+      })
+      .join("\n");
+
+    const deliveryText =
+      delivery === "retiro"
+        ? "🏪 *Retiro en local* (Av. Cazón 464, Tigre)"
+        : `🚚 *Envío a domicilio*\n📍 ${address}`;
+
+    const paymentLabels: Record<Payment, string> = {
+      efectivo:      "💵 Efectivo",
+      transferencia: "🏦 Transferencia bancaria",
+      mercadopago:   "💳 Mercado Pago",
+    };
+
+    const message =
+      `🛍️ *NUEVO PEDIDO - Distribuidora Osmar*\n\n` +
+      `📦 *Productos:*\n${productLines}\n\n` +
+      `💰 *Total estimado: $${total.toLocaleString("es-AR")}*\n\n` +
+      `${deliveryText}\n\n` +
+      `💳 *Forma de pago:* ${paymentLabels[payment!]}`;
+
+    return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`;
+  }
+
+  function handleSend() {
     if (!canContinue || loading) return;
     setLoading(true);
     setError("");
 
-    try {
-      // 1. Guardar el pedido en la BD como Nota de Pedido
-      const res = await fetch("/api/cart/submit-whatsapp-order", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: items.map((i) => ({
-            productId:    i.id,
-            code:         i.code,
-            name:         i.name,
-            quantity:     i.quantity,
-            price:        i.price,
-            purchaseType: i.purchaseType,
-          })),
-          delivery,
-          address,
-          paymentMethod: payment,
-        }),
-      });
+    // ── PASO 1: Armar URL ANTES de cualquier async ────────────────────────────
+    // Los browsers mobile bloquean window.open() si hay un await previo
+    // (el "user gesture" se considera consumido después del primer await).
+    const waUrl = buildWhatsAppUrl();
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Error al guardar el pedido");
+    // ── PASO 2: Guardar en BD sin await (fire-and-forget) ─────────────────────
+    fetch("/api/cart/submit-whatsapp-order", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        items: items.map((i) => ({
+          productId:    i.id,
+          code:         i.code,
+          name:         i.name,
+          quantity:     i.quantity,
+          price:        i.price,
+          purchaseType: i.purchaseType,
+        })),
+        delivery,
+        address,
+        paymentMethod: payment,
+      }),
+    }).catch((err) => console.error("[WA] Error guardando pedido:", err));
+    // No await → el pedido se guarda async, sin bloquear el gesto del usuario
 
-      // 2. Armar líneas de productos
-      const productLines = items
-        .map((i) => {
-          const typeLabel =
-            i.purchaseType === "bulto"
-              ? `${i.bulkUnit ?? "bulto"}${i.bulkSize ? ` ×${i.bulkSize}` : ""}`
-              : "unidad";
-          return `▸ [${i.code}] ${i.name}\n   Cantidad: ${i.quantity} ${typeLabel}`;
-        })
-        .join("\n");
+    // ── PASO 3: Abrir WhatsApp INMEDIATAMENTE ────────────────────────────────
+    // window.location.href es más compatible en mobile que window.open()
+    window.location.href = waUrl;
 
-      // 3. Texto de entrega y pago
-      const deliveryText =
-        delivery === "retiro"
-          ? "🏪 *Retiro en local* (Av. Cazón 464, Tigre)"
-          : `🚚 *Envío a domicilio*\n📍 ${address}`;
-
-      const paymentLabels: Record<Payment, string> = {
-        efectivo:      "💵 Efectivo",
-        transferencia: "🏦 Transferencia bancaria",
-        mercadopago:   "💳 Mercado Pago",
-      };
-
-      // 4. Info del cliente (viene de la BD si tiene sesión)
-      const clientInfo = data.clientCode
-        ? `${data.clientName} (Cód: ${data.clientCode})`
-        : data.clientName ?? "";
-
-      // 5. Mensaje completo
-      const message =
-        `🛍️ *NUEVO PEDIDO - Distribuidora Osmar*\n\n` +
-        (clientInfo ? `👤 *Cliente:* ${clientInfo}\n\n` : "") +
-        `📦 *Productos:*\n${productLines}\n\n` +
-        `💰 *Total estimado: $${total.toLocaleString("es-AR")}*\n\n` +
-        `${deliveryText}\n\n` +
-        `💳 *Forma de pago:* ${paymentLabels[payment!]}`;
-
-      // 6. Abrir WhatsApp
-      window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`, "_blank");
-
-      // 7. Limpiar carrito y cerrar
-      clearCart();
-      onClose();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Hubo un error. Intentá de nuevo.";
-      setError(msg);
-      // Fallback: abrir WhatsApp igual sin guardar en BD
-      const lines = items
-        .map((i) => `• ${i.quantity}× ${i.name} — $${(i.price * i.quantity).toLocaleString("es-AR")}`)
-        .join("\n");
-      window.open(
-        `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(
-          `🛍️ Pedido Distribuidora Osmar:\n\n${lines}\n\n*Total: $${total.toLocaleString("es-AR")}*`
-        )}`,
-        "_blank"
-      );
-      clearCart();
-      onClose();
-    } finally {
-      setLoading(false);
-    }
+    // ── PASO 4: Limpiar y cerrar ─────────────────────────────────────────────
+    clearCart();
+    onClose();
+    setLoading(false);
   }
 
   return (
@@ -351,6 +333,21 @@ export default function WhatsAppCheckoutModal({ items, total, onClose }: Props) 
             <p style={{ fontSize: ".72rem", color: "#aaa", textAlign: "center", marginTop: 8 }}>
               Tu pedido queda registrado y se abre WhatsApp automáticamente
             </p>
+            {/* Fallback para mobile: link directo si window.location.href no disparó */}
+            {canContinue && !loading && (
+              <p style={{ textAlign: "center", marginTop: 6 }}>
+                <a
+                  href={buildWhatsAppUrl()}
+                  style={{
+                    fontSize: ".72rem",
+                    color: WA_COLOR,
+                    textDecoration: "underline",
+                  }}
+                >
+                  ¿No se abrió WhatsApp? Tocá acá
+                </a>
+              </p>
+            )}
           </div>
         </div>
       </div>
