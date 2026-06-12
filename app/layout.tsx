@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { DM_Sans, Syne, Epilogue, Manrope } from "next/font/google";
 import "./globals.css";
 
@@ -25,6 +25,11 @@ const manrope = Manrope({
   weight: ["400", "600", "700"],
   variable: "--font-manrope",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "Distribuidora Osmar – Artículos de Limpieza",

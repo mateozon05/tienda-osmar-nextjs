@@ -227,7 +227,7 @@ async function importOrders(excelPath: string) {
     if (records.length === 0) continue;
 
     // createMany con skipDuplicates para idempotencia
-    const result = await (prisma.order as { createMany: (arg: { data: object[]; skipDuplicates: boolean }) => Promise<{ count: number }> }).createMany({
+    const result = await (prisma.order as unknown as { createMany: (arg: { data: object[]; skipDuplicates: boolean }) => Promise<{ count: number }> }).createMany({
       data: records,
       skipDuplicates: true,
     });

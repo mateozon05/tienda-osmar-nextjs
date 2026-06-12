@@ -202,7 +202,7 @@ function parseFile(
 
   for (const sheetName of wb.SheetNames) {
     const ws = wb.Sheets[sheetName];
-    const firstRows: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1 }).slice(0, 5);
+    const firstRows = (XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][]).slice(0, 5);
     const firstFlat = firstRows.flat().map((v: any) => norm(v));
 
     // Detectar formato Saphirus: tiene "UNIDAD" como header de precio

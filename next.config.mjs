@@ -4,7 +4,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    // ignoreBuildErrors: true, // eliminado — todos los errores corregidos
   },
   images: {
     remotePatterns: [

@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       details:  { company: user.company },
       ip:       req.headers.get("x-forwarded-for") ?? "unknown",
     }),
-    notifyNewUserPending({ name: user.name, email: user.email, company: user.company }),
+    notifyNewUserPending({ name: user.name ?? name, email: user.email ?? email, company: user.company }),
   ]);
 
   return NextResponse.json(
