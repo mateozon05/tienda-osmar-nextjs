@@ -112,6 +112,14 @@ export async function POST(req: NextRequest) {
 
     console.log(`[submit-whatsapp-order] Nota creada: ${note.number} (id=${note.id}) cliente="${clientName}"`);
 
+    // Marcar carrito persistido como convertido (no enviar email de recuperación)
+    if (userId) {
+      await prisma.cart.updateMany({
+        where: { userId },
+        data:  { convertedAt: new Date() },
+      });
+    }
+
     // ── Auditoría + notificación al admin (no bloqueante) ──────────────────
     await Promise.all([
       audit({

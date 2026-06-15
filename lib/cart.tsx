@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 
 export type PurchaseType = "bulto" | "unidad";
 
@@ -35,6 +35,9 @@ const CartContext = createContext<CartContextType | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Evitar sync en el render inicial (antes de que cargue localStorage)
+  const firstRenderRef = useRef(true);
 
   useEffect(() => {
     try {
@@ -45,6 +48,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     localStorage.setItem("osmar-cart", JSON.stringify(items));
+
+    // Sincronizar con BD solo después del render inicial
+    if (firstRenderRef.current) {
+      firstRenderRef.current = false;
+      return;
+    }
+    if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+    syncTimerRef.current = setTimeout(() => {
+      fetch("/api/cart/sync", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ items }),
+      }).catch(() => {}); // fire-and-forget
+    }, 2000);
+    return () => {
+      if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+    };
   }, [items]);
 
   function addItem(product: Omit<CartItem, "quantity">) {

@@ -9,10 +9,11 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url);
-  const q = searchParams.get("q") ?? "";
+  const q        = searchParams.get("q")        ?? "";
   const category = searchParams.get("category") ?? "";
-  const page = parseInt(searchParams.get("page") ?? "1");
-  const limit = parseInt(searchParams.get("limit") ?? "50");
+  const status   = searchParams.get("status")   ?? "active"; // "all" | "active" | "inactive"
+  const page     = parseInt(searchParams.get("page")  ?? "1");
+  const limit    = parseInt(searchParams.get("limit") ?? "50");
 
   const where = {
     ...(q && {
@@ -22,6 +23,9 @@ export async function GET(req: NextRequest) {
       ],
     }),
     ...(category && { category: { slug: category } }),
+    ...(status === "active"   && { active: true  }),
+    ...(status === "inactive" && { active: false }),
+    // status === "all" → sin filtro
   };
 
   const [products, total] = await Promise.all([

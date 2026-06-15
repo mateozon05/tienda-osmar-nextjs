@@ -41,6 +41,7 @@ export default function AdminProductsPage() {
   const [categories, setCategories] = useState<{name:string;slug:string}[]>([]);
   const [q, setQ]                 = useState("");
   const [category, setCategory]   = useState("");
+  const [status, setStatus]       = useState<"all" | "active" | "inactive">("active");
   const [page, setPage]           = useState(1);
   const [total, setTotal]         = useState(0);
   const [loading, setLoading]     = useState(true);
@@ -53,14 +54,14 @@ export default function AdminProductsPage() {
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
-    const params = new URLSearchParams({ q, category, page: String(page), limit: String(LIMIT) });
+    const params = new URLSearchParams({ q, category, status, page: String(page), limit: String(LIMIT) });
     const res = await fetch(`/api/admin/products?${params}`);
     const data = await res.json();
     setProducts(data.products);
     setTotal(data.total);
     setRows(Object.fromEntries(data.products.map((p: AdminProduct) => [p.id, initRow(p)])));
     setLoading(false);
-  }, [q, category, page]);
+  }, [q, category, status, page]);
 
   useEffect(() => {
     const t = setTimeout(fetchProducts, q ? 300 : 0);
@@ -89,6 +90,19 @@ export default function AdminProductsPage() {
       ...prev,
       [p.id]: { ...prev[p.id], bulkPrice: String(p.price), dirty: true, saved: false },
     }));
+  }
+
+  async function toggleActive(productId: number, currentActive: boolean) {
+    if (!confirm(`¿Querés ${currentActive ? "dar de baja" : "reactivar"} este producto?`)) return;
+    const res = await fetch(`/api/admin/products/${productId}`, {
+      method:  "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ active: !currentActive }),
+    });
+    if (!res.ok) { alert("Error al actualizar el producto"); return; }
+    setProducts(prev =>
+      prev.map(p => p.id === productId ? { ...p, active: !currentActive } : p)
+    );
   }
 
   async function saveRow(id: number) {
@@ -137,6 +151,15 @@ export default function AdminProductsPage() {
           {categories.map(c => (
             <option key={c.slug} value={c.slug}>{c.name}</option>
           ))}
+        </select>
+        <select
+          className="ap-select"
+          value={status}
+          onChange={e => { setStatus(e.target.value as typeof status); setPage(1); }}
+        >
+          <option value="active">✅ Activos</option>
+          <option value="inactive">❌ Inactivos</option>
+          <option value="all">Todos</option>
         </select>
       </div>
 
@@ -228,7 +251,7 @@ export default function AdminProductsPage() {
                           onChange={e => updateRow(p.id, "unitPrice", e.target.value)}
                         />
                       </td>
-                      <td className="ap-cell-action">
+                      <td className="ap-cell-action" style={{ display: "flex", gap: 6, alignItems: "center" }}>
                         {row.saved ? (
                           <span className="ap-saved">✓</span>
                         ) : (
@@ -240,6 +263,22 @@ export default function AdminProductsPage() {
                             {row.saving ? "…" : "Guardar"}
                           </button>
                         )}
+                        <button
+                          onClick={() => toggleActive(p.id, p.active)}
+                          title={p.active ? "Dar de baja" : "Reactivar"}
+                          style={{
+                            padding: "4px 8px",
+                            borderRadius: 6,
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: 12,
+                            fontWeight: 600,
+                            background: p.active ? "#fee2e2" : "#d1fae5",
+                            color:      p.active ? "#991b1b" : "#065f46",
+                          }}
+                        >
+                          {p.active ? "Dar de baja" : "Reactivar"}
+                        </button>
                       </td>
                     </tr>
                   );
