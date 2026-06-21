@@ -11,6 +11,7 @@ const NAV = [
   { href: "/orders",           label: "Órdenes",         icon: "📦",  exact: false },
   { href: "/products",         label: "Productos",  icon: "🏷️", exact: true  },
   { href: "/products/images",  label: "Imágenes",   icon: "🖼️", exact: false },
+  { href: "/stock-sync",       label: "Sync Stock", icon: "🔄", exact: true  },
   { href: "/clients",          label: "Clientes",   icon: "👥",  exact: false },
   { href: "/salespersons",     label: "Vendedores", icon: "🤝",  exact: false },
   { href: "/users",            label: "Usuarios",   icon: "👤",  exact: false },

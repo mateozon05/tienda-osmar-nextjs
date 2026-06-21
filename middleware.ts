@@ -11,8 +11,9 @@ const PUBLIC_PATHS = [
   "/register",
   "/api/auth/login",
   "/api/auth/register",
-  "/api/cart",          // carrito accesible sin cuenta (guests)
-  "/api/cron",          // auth interna via Bearer token (CRON_SECRET)
+  "/api/cart",                          // carrito accesible sin cuenta (guests)
+  "/api/cron",                          // auth interna via Bearer token (CRON_SECRET)
+  "/api/checkout/mercadopago/webhook",  // auth interna via x-signature de MP
 ];
 
 // Accessible to both admin and superadmin

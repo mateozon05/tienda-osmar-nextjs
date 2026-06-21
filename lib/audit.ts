@@ -12,7 +12,8 @@ export type AuditAction =
   | "ORDER_STATUS_CHANGED"
   | "PICKING_NOTE_CREATED"
   | "PRICE_LIST_CREATED"
-  | "PRICE_LIST_UPDATED";
+  | "PRICE_LIST_UPDATED"
+  | "STOCK_SYNC";
 
 interface AuditParams {
   action: AuditAction;
