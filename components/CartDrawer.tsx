@@ -92,7 +92,7 @@ export default function CartDrawer({ open, onClose }: Props) {
             </div>
             <button
               className="btn-wa"
-              onClick={() => setShowWAModal(true)}
+              onClick={() => { onClose(); setShowWAModal(true); }}
               style={{ marginTop: 4, padding: "14px 20px", fontSize: ".95rem" }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">

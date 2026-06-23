@@ -27,6 +27,7 @@ type CartContextType = {
   removeItem: (id: number, purchaseType: PurchaseType) => void;
   updateQty: (id: number, purchaseType: PurchaseType, qty: number) => void;
   clearCart: () => void;
+  clearAndLogout: () => void;
   total: number;
   count: number;
 };
@@ -40,10 +41,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const firstRenderRef = useRef(true);
 
   useEffect(() => {
+    // 1. Carga inicial desde localStorage (inmediata, sin parpadeo)
     try {
       const saved = localStorage.getItem("osmar-cart");
       if (saved) setItems(JSON.parse(saved));
     } catch {}
+
+    // 2. Si el usuario está logueado, reemplazar con el carrito de BD
+    // Esto evita que un nuevo usuario vea el carrito de un usuario anterior
+    fetch("/api/cart/sync")
+      .then((r) => r.json())
+      .then((data: { items?: CartItem[] }) => {
+        if (Array.isArray(data.items)) {
+          // Si la BD devuelve items, son del usuario actual → usar esos
+          // Si devuelve vacío (usuario sin carrito o nuevo usuario), limpiar localStorage
+          setItems(data.items);
+          localStorage.setItem("osmar-cart", JSON.stringify(data.items));
+          firstRenderRef.current = false; // no re-disparar sync inmediato
+        }
+      })
+      .catch(() => {
+        // Sin sesión o error de red → usar lo que ya cargó localStorage
+      });
   }, []);
 
   useEffect(() => {
@@ -108,12 +127,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems([]);
   }
 
+  // Llamar al hacer logout: limpia localStorage para que el próximo usuario no herede este carrito
+  function clearAndLogout() {
+    setItems([]);
+    localStorage.removeItem("osmar-cart");
+  }
+
   const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
   const count = items.reduce((s, i) => s + i.quantity, 0);
 
   return (
     <CartContext.Provider
-      value={{ items, addItem, removeItem, updateQty, clearCart, total, count }}
+      value={{ items, addItem, removeItem, updateQty, clearCart, clearAndLogout, total, count }}
     >
       {children}
     </CartContext.Provider>

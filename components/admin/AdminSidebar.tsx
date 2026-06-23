@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import NotificationBell from "@/components/admin/NotificationBell";
 
 // Items para todos los admins
 const NAV = [
@@ -57,6 +58,7 @@ export default function AdminSidebar({ role }: { role: string }) {
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
+    try { localStorage.removeItem("osmar-cart"); } catch {}
     router.push("/");
   }
 
@@ -114,6 +116,10 @@ export default function AdminSidebar({ role }: { role: string }) {
             </>
           )}
         </nav>
+
+        <div style={{ padding: "0 12px 8px" }}>
+          <NotificationBell />
+        </div>
 
         <div className="admin-sidebar-footer">
           <Link href="/" className="admin-store-link">
@@ -210,6 +216,10 @@ export default function AdminSidebar({ role }: { role: string }) {
             </>
           )}
         </nav>
+
+        <div style={{ padding: "0 16px 8px" }}>
+          <NotificationBell />
+        </div>
 
         <div className="admin-drawer-foot">
           <Link href="/" onClick={closeDrawer} className="admin-drawer-shop-link">

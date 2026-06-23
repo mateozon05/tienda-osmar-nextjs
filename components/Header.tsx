@@ -56,7 +56,7 @@ function dropRecent(q: string) {
 export default function Header({
   query, onQueryChange, onCartOpen, onMenuToggle, onCategorySelect,
 }: Props) {
-  const { count } = useCart();
+  const { count, clearAndLogout } = useCart();
   const { count: favCount } = useFavorites();
   const [user, setUser] = useState<User>(null);
   const [authOpen, setAuthOpen] = useState(false);
@@ -135,6 +135,7 @@ export default function Header({
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
+    clearAndLogout();
     setUser(null);
     setMenuOpen(false);
   }

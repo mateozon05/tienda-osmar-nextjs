@@ -2,6 +2,45 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 
+// GET — cargar carrito del usuario desde BD (llamado al montar CartProvider)
+export async function GET() {
+  const session = await getSession();
+  if (!session) return NextResponse.json({ items: [] });
+
+  const cart = await prisma.cart.findUnique({
+    where: { userId: session.userId },
+    include: {
+      items: {
+        include: {
+          product: {
+            select: {
+              id: true, code: true, name: true,
+              bulkUnit: true, bulkSize: true,
+              category: { select: { emoji: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!cart || cart.convertedAt) return NextResponse.json({ items: [] });
+
+  return NextResponse.json({
+    items: cart.items.map((item) => ({
+      id:           item.productId,
+      code:         item.product.code,
+      name:         item.product.name,
+      price:        item.price,
+      quantity:     item.quantity,
+      purchaseType: item.type as "bulto" | "unidad",
+      emoji:        item.product.category?.emoji ?? "📦",
+      bulkUnit:     item.product.bulkUnit  ?? undefined,
+      bulkSize:     item.product.bulkSize  ?? undefined,
+    })),
+  });
+}
+
 // POST — guardar/actualizar carrito en BD (fire-and-forget desde el frontend)
 export async function POST(req: Request) {
   const session = await getSession();
