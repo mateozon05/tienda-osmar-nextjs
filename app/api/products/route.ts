@@ -52,33 +52,14 @@ export async function GET(req: NextRequest) {
   const maxPrice = parseFloat(searchParams.get("maxPrice") ?? "0");
   const inStock  = searchParams.get("inStock") === "true";
 
-  // ── Resolve price list for current user ──────────────
+  // ── Resolve price list for current user (in parallel with count) ──
   let priceListId: number | null = null;
   let saphirusPriceListId: number | null = null;
   let discountPct: number | null = null;
 
   const session = await getSession();
-  if (session) {
-    const user = await prisma.user.findUnique({
-      where: { id: session.userId },
-      select: {
-        status: true,
-        priceList:         { select: { id: true, discountPercentage: true } },
-        saphirusPriceList: { select: { id: true } },
-      },
-    });
-    if (user?.status === "approved") {
-      if (user.priceList) {
-        priceListId = user.priceList.id;
-        discountPct = user.priceList.discountPercentage ?? null;
-      }
-      if (user.saphirusPriceList) {
-        saphirusPriceListId = user.saphirusPriceList.id;
-      }
-    }
-  }
 
-  // ── Build Prisma where ────────────────────────────────
+  // ── Build Prisma where (no depende del usuario) ───────
   const priceFilter: { gte?: number; lte?: number } = {};
   if (minPrice > 0) priceFilter.gte = minPrice;
   if (maxPrice > 0) priceFilter.lte = maxPrice;
@@ -101,33 +82,58 @@ export async function GET(req: NextRequest) {
     sort === "price_desc" ? { price: "desc" as const } :
     { name: "asc" as const };
 
-  const hasPersonalPrices = priceListId !== null || saphirusPriceListId !== null;
-
-  const [rawProducts, total] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      orderBy,
-      skip: (page - 1) * limit,
-      take: limit,
-      include: {
-        category: true,
-        // Include product prices for both lists; each product only has prices for
-        // its own type (general or Saphirus), so we filter by both and let
-        // applyPrices pick the first match.
-        ...(hasPersonalPrices && {
-          productPrices: {
-            where: {
-              OR: [
-                ...(priceListId         ? [{ priceListId }]         : []),
-                ...(saphirusPriceListId ? [{ priceListId: saphirusPriceListId }] : []),
-              ],
-            },
+  // User lookup y count corren en paralelo (where no depende del usuario)
+  const [userRow, total] = await Promise.all([
+    session
+      ? prisma.user.findUnique({
+          where: { id: session.userId },
+          select: {
+            status: true,
+            priceList:         { select: { id: true, discountPercentage: true } },
+            saphirusPriceList: { select: { id: true } },
           },
-        }),
-      },
-    }),
+        })
+      : null,
     prisma.product.count({ where }),
   ]);
+
+  if (userRow?.status === "approved") {
+    if (userRow.priceList) {
+      priceListId = userRow.priceList.id;
+      discountPct = userRow.priceList.discountPercentage ?? null;
+    }
+    if (userRow.saphirusPriceList) {
+      saphirusPriceListId = userRow.saphirusPriceList.id;
+    }
+  }
+
+  const hasPersonalPrices = priceListId !== null || saphirusPriceListId !== null;
+
+  const rawProducts = await prisma.product.findMany({
+    where,
+    orderBy,
+    skip: (page - 1) * limit,
+    take: limit,
+    select: {
+      id: true, code: true, name: true, price: true,
+      stock: true, imageUrl: true, isSaphirus: true,
+      bulkUnit: true, bulkSize: true, bulkPrice: true, unitPrice: true,
+      category: { select: { name: true, emoji: true, slug: true } },
+      // Solo traer precios del cliente actual; cada producto tiene precios
+      // solo para su tipo (general o Saphirus), applyPrices toma el primero.
+      ...(hasPersonalPrices && {
+        productPrices: {
+          where: {
+            OR: [
+              ...(priceListId         ? [{ priceListId }]         : []),
+              ...(saphirusPriceListId ? [{ priceListId: saphirusPriceListId }] : []),
+            ],
+          },
+          select: { customPrice: true, customBulkPrice: true, priceListId: true },
+        },
+      }),
+    },
+  });
 
   // Apply personalized prices — for each product, only the matching list price
   // will be present in productPrices (general products have no Saphirus price and vice versa)

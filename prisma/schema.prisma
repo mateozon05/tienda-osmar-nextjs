@@ -150,6 +150,9 @@ model Cart {
   convertedAt    DateTime?  // cuándo se convirtió en pedido
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
+
+  @@index([updatedAt])     // cron de carritos abandonados
+  @@index([convertedAt])   // filtrar no convertidos
 }
 
 model CartItem {
@@ -163,6 +166,8 @@ model CartItem {
   product   Product @relation(fields: [productId], references: [id])
 
   @@unique([cartId, productId, type]) // mismo producto puede ir como bulto Y unidad
+  @@index([cartId])
+  @@index([productId])
 }
 
 model PickingNote {
@@ -340,4 +345,8 @@ model AuditLog {
   ip        String?
   userAgent String?
   createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId])
+  @@index([entity, entityId])
 }
