@@ -3,8 +3,22 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { signToken, tokenCookieOptions } from "@/lib/auth";
 import { audit } from "@/lib/audit";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
+  // Rate limiting: 5 intentos por IP por minuto
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+    ?? req.headers.get("x-real-ip")
+    ?? "unknown";
+
+  const { allowed } = checkRateLimit(`login:${ip}`, 5, 60_000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Demasiados intentos. Esperá un minuto e intentá de nuevo.", code: "RATE_LIMITED" },
+      { status: 429 }
+    );
+  }
+
   // Accept both old `email` field and new `identifier` (email OR clientCode)
   const body = await req.json();
   const identifier: string = (body.identifier ?? body.email ?? "").trim();

@@ -7,7 +7,7 @@ const SHOP_URL = process.env.NEXT_PUBLIC_URL ?? "https://tienda-osmar-nextjs.ver
 export async function GET(req: NextRequest) {
   // Auth: Bearer token que solo conoce Vercel Cron
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== `Bearer ${process.env.CRON_SECRET?.trim()}`) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
