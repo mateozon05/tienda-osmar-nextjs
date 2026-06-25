@@ -48,3 +48,11 @@ next-env.d.ts
 public/product-images/
 public/Catalogo-*.pdf
 public/logo-osmar-backup.png
+
+# Claude Code internal config
+.claude/
+
+# Dev logs and local artifacts
+dev-server.log
+dev.log
+outputs/
